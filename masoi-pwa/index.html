@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐺 Quản Trò Ma Sói</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ma Sói">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── THEME VARIABLES ── */
+:root {
+  --bg:#f5f4f0;--bg2:#ffffff;--bg3:#ece9e3;--bg4:#e4e0d8;
+  --text:#18170f;--text2:#5c5a52;--text3:#9c9a90;
+  --bdr:rgba(0,0,0,0.10);--bdr2:rgba(0,0,0,0.18);
+  --accent:#7c3aed;--accent-bg:#ede9fe;--accent-text:#4c1d95;
+  --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
+  --green:#16a34a;--green-bg:#dcfce7;--green-text:#166534;
+  --amber:#b45309;--amber-bg:#fef3c7;--amber-text:#78350f;
+  --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-text:#1e3a8a;
+  --pink:#db2777;--pink-bg:#fce7f3;
+  --r:10px;--rlg:14px;
+  --transition:background 0.6s ease,color 0.3s ease,border-color 0.4s ease;
+  --header-bg:#ffffff;
+  --night-glow:none;
+}
+
+/* ── NIGHT THEME (auto on phase=night) ── */
+html.night {
+  --bg:#0f0e14;--bg2:#181620;--bg3:#22202e;--bg4:#2a2838;
+  --text:#e8e6f0;--text2:#9e9cb0;--text3:#5e5c70;
+  --bdr:rgba(255,255,255,0.08);--bdr2:rgba(255,255,255,0.15);
+  --accent:#a78bfa;--accent-bg:#2e1065;--accent-text:#c4b5fd;
+  --red:#f87171;--red-bg:#3b0a0a;--red-text:#fca5a5;
+  --green:#4ade80;--green-bg:#052e16;--green-text:#86efac;
+  --amber:#fbbf24;--amber-bg:#3a1a00;--amber-text:#fde68a;
+  --blue:#60a5fa;--blue-bg:#1e1b4b;--blue-text:#bfdbfe;
+  --pink:#f472b6;--pink-bg:#4a0d2e;
+  --header-bg:#12101a;
+  --night-glow:0 0 40px rgba(100,70,200,0.15);
+}
+
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;
+  min-height:100vh;transition:var(--transition);
+}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+header {
+  background:var(--header-bg);border-bottom:1px solid var(--bdr);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:100;
+  transition:var(--transition);box-shadow:var(--night-glow);
+}
+.logo{font-size:22px;line-height:1}
+header h1{font-size:16px;font-weight:700;flex:1}
+.phase-pill{
+  padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;
+  letter-spacing:.03em;transition:var(--transition);
+}
+.pill-day{background:var(--amber-bg);color:var(--amber-text)}
+.pill-night{background:var(--accent-bg);color:var(--accent-text)}
+
+/* ── NAV ── */
+nav{
+  background:var(--header-bg);border-bottom:1px solid var(--bdr);
+  display:flex;overflow-x:auto;gap:2px;padding:6px 8px;
+  scrollbar-width:none;transition:var(--transition);
+}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  padding:7px 13px;border-radius:8px;border:none;
+  background:transparent;color:var(--text2);
+  font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:all .15s;
+}
+nav button.active{background:var(--accent-bg);color:var(--accent-text)}
+nav button:hover:not(.active){background:var(--bg3)}
+
+/* ── MAIN ── */
+.main{flex:1;padding:14px;max-width:860px;margin:0 auto;width:100%}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── CARD ── */
+.card{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:var(--rlg);padding:16px;margin-bottom:12px;
+  transition:var(--transition);
+}
+.card-title{
+  font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;
+}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat{
+  background:var(--bg3);border-radius:10px;padding:12px 8px;
+  text-align:center;transition:var(--transition);
+}
+.stat-num{font-size:28px;font-weight:800;line-height:1}
+.stat-label{font-size:10px;color:var(--text3);margin-top:3px;font-weight:500}
+.s-alive .stat-num{color:var(--green)}
+.s-dead .stat-num{color:var(--red)}
+.s-wolf .stat-num{color:var(--accent)}
+
+/* ── PHASE CONTROL CARD (BIG BUTTONS) ── */
+.phase-big{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.phase-btn{
+  padding:14px;border-radius:12px;border:2px solid transparent;
+  font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:all .2s;
+}
+.phase-btn .icon{font-size:26px}
+.phase-btn-day{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber)}
+.phase-btn-night{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.phase-btn.active-phase{opacity:0.4;cursor:default;pointer-events:none}
+.phase-btn:not(.active-phase):hover{filter:brightness(0.93)}
+@media(max-width:400px){.phase-big{grid-template-columns:1fr}}
+
+/* ── TIMER ── */
+.timer-card{
+  background:var(--bg3);border-radius:12px;padding:14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.timer-display{
+  text-align:center;font-size:48px;font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  line-height:1;
+  transition:color .3s;
+}
+.timer-display.warn{color:var(--red)}
+.timer-display.ok{color:var(--accent)}
+.timer-label{text-align:center;font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.timer-controls{display:flex;gap:8px;justify-content:center}
+.timer-presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.preset-btn{
+  padding:5px 12px;border-radius:99px;border:1px solid var(--bdr2);
+  background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .15s;
+}
+.preset-btn:hover{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.timer-custom{display:flex;align-items:center;gap:6px}
+.timer-custom input{width:60px;padding:5px 8px;font-size:13px;text-align:center}
+.timer-status{
+  text-align:center;font-size:12px;font-weight:600;
+  padding:4px 12px;border-radius:99px;
+}
+.ts-running{background:var(--green-bg);color:var(--green-text)}
+.ts-paused{background:var(--amber-bg);color:var(--amber-text)}
+.ts-stopped{background:var(--bg4);color:var(--text3)}
+.ts-done{background:var(--red-bg);color:var(--red-text)}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 14px;border-radius:8px;border:1px solid var(--bdr2);
+  background:var(--bg2);color:var(--text);
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.btn:hover{background:var(--bg3)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{opacity:.88;background:var(--accent)}
+.btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-danger:hover{opacity:.88}
+.btn-success{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-success:hover{opacity:.88}
+.btn-warning{background:var(--amber);color:#fff;border-color:var(--amber)}
+.btn-warning:hover{opacity:.88}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{padding:6px 8px;border-radius:8px;font-size:15px}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+
+/* ── INPUTS ── */
+input[type=text],input[type=number],textarea,select{
+  width:100%;padding:9px 12px;
+  border:1px solid var(--bdr2);border-radius:8px;
+  background:var(--bg);color:var(--text);
+  font-size:14px;transition:border-color .15s,background .3s,color .3s;
+}
+input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(124,58,237,.12);
+}
+textarea{resize:vertical;min-height:80px}
+label{font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px}
+.form-group{margin-bottom:12px}
+
+/* ── PLAYER CARDS ── */
+.player-list{display:flex;flex-direction:column;gap:7px}
+.player-card{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:10px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  transition:all .2s;
+}
+.player-card.dead{opacity:.45;background:var(--bg3)}
+.player-card.dead .pname{text-decoration:line-through;color:var(--text3)}
+.player-card.protected{border-color:var(--blue);box-shadow:0 0 0 2px rgba(29,78,216,.15)}
+.avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;
+}
+.pinfo{flex:1;min-width:0}
+.pname{font-weight:700;font-size:14px}
+.pmeta{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pactions{display:flex;gap:3px;flex-shrink:0}
+.role-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:99px;font-size:11px;font-weight:700;
+}
+.t-wolf{background:var(--accent-bg);color:var(--accent-text)}
+.t-village{background:var(--green-bg);color:var(--green-text)}
+.t-other{background:var(--amber-bg);color:var(--amber-text)}
+.t-hidden{background:var(--bg3);color:var(--text3)}
+
+/* ── ROLE SETUP ── */
+.role-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.role-row input[type=number]{width:65px;flex-shrink:0}
+
+/* ── ALERTS ── */
+.alert{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:10px}
+.a-warn{background:var(--amber-bg);color:var(--amber-text)}
+.a-danger{background:var(--red-bg);color:var(--red-text)}
+.a-success{background:var(--green-bg);color:var(--green-text)}
+.a-info{background:var(--blue-bg);color:var(--blue-text)}
+
+/* ── BIG WARNING ── */
+.big-warn{
+  background:var(--red-bg);border:2px solid var(--red);
+  border-radius:var(--rlg);padding:14px;margin-bottom:12px;
+}
+.big-warn h4{color:var(--red);font-size:15px;margin-bottom:6px}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.modal-overlay.hidden{display:none}
+.modal{
+  background:var(--bg2);border-radius:var(--rlg);
+  padding:20px;max-width:420px;width:100%;
+  max-height:88vh;overflow-y:auto;
+  box-shadow:0 12px 48px rgba(0,0,0,.25);
+  transition:var(--transition);
+}
+.modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:14px;font-weight:800}
+
+/* ── SKILL CARDS ── */
+.skill-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.skill-name{font-weight:700;font-size:14px}
+.used-tag{background:var(--bg3);color:var(--text3);font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
+
+/* ── LOG ── */
+.log-list{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow-y:auto}
+.log-entry{
+  padding:9px 12px;border-radius:8px;background:var(--bg3);
+  font-size:13px;display:flex;gap:8px;align-items:flex-start;
+}
+.log-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;flex-shrink:0;margin-top:1px}
+.log-text{flex:1;word-break:break-word}
+.log-time{color:var(--text3);font-size:10px;white-space:nowrap;margin-top:1px}
+
+/* ── FILTER TABS ── */
+.ftabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.ftab{
+  padding:4px 11px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1px solid var(--bdr);background:var(--bg2);color:var(--text2);
+  cursor:pointer;transition:all .15s;
+}
+.ftab.active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:28px 16px;color:var(--text3);font-size:13px}
+.check-row{display:flex;align-items:center;gap:8px;padding:8px 0}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.check-label{font-size:13px;cursor:pointer;flex:1}
+.divider{height:1px;background:var(--bdr);margin:12px 0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* ── ASSIGN GRID ── */
+.assign-team-section{margin-bottom:14px}
+.assign-team-header{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:8px;
+  font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  margin-bottom:8px;
+}
+.assign-team-wolf{background:var(--accent-bg);color:var(--accent-text)}
+.assign-team-village{background:var(--green-bg);color:var(--green-text)}
+.assign-team-other{background:var(--amber-bg);color:var(--amber-text)}
+.assign-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:7px;
+}
+.assign-card{
+  background:var(--bg3);border-radius:9px;padding:9px 11px;
+  display:flex;align-items:center;gap:8px;
+  border:1px solid var(--bdr);transition:all .15s;
+}
+.assign-card:hover{border-color:var(--bdr2);background:var(--bg4)}
+.assign-card .avatar{width:32px;height:32px;font-size:11px;flex-shrink:0}
+.assign-card-info{flex:1;min-width:0}
+.assign-card-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.assign-card-role{font-size:11px;margin-top:2px;display:flex;align-items:center;gap:3px}
+
+/* ── DASHBOARD OVERVIEW ── */
+.overview-name-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:6px;margin-bottom:0;
+}
+.overview-player-chip{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 10px;border-radius:9px;
+  background:var(--bg3);border:1px solid var(--bdr);
+  transition:all .15s;
+}
+.overview-player-chip.dead-chip{opacity:.45}
+.overview-player-chip .avatar{width:28px;height:28px;font-size:10px;flex-shrink:0}
+.overview-chip-info{flex:1;min-width:0}
+.overview-chip-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.overview-chip-role{font-size:10px;margin-top:1px}
+
+html.night .assign-card{border-color:rgba(100,70,220,.15)}
+
+@media(max-width:480px){
+  .assign-grid{grid-template-columns:repeat(2,1fr)}
+  .overview-name-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+
+html.night .card{border-color:rgba(100,70,220,.2)}
+html.night header{border-bottom-color:rgba(100,70,220,.25)}
+html.night nav{border-bottom-color:rgba(100,70,220,.2)}
+
+/* ── VOTE SECTION ── */
+.vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:400px){.vote-grid{grid-template-columns:1fr}}
+.vote-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:10px;
+  border:1px solid var(--bdr);background:var(--bg3);
+  cursor:pointer;transition:all .15s;font-size:13px;font-weight:600;
+}
+.vote-chip:hover{border-color:var(--accent);background:var(--accent-bg);color:var(--accent-text)}
+.vote-chip.selected{border-color:var(--red);background:var(--red-bg);color:var(--red-text)}
+.vote-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap input{padding-left:32px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text3);pointer-events:none}
+
+/* ── PHASE SEPARATOR in dashboard ── */
+.phase-sep{
+  text-align:center;padding:6px 0 10px;
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);
+}
+
+/* ── STATS INLINE (compact dashboard) ── */
+.stats-inline{
+  display:flex;align-items:center;
+  background:var(--bg3);border-radius:10px;padding:10px 12px;
+  margin-bottom:10px;
+}
+.si-item{display:flex;flex-direction:column;align-items:center;flex:1;gap:1px}
+.si-num{font-size:22px;font-weight:800;line-height:1}
+.si-lbl{font-size:10px;color:var(--text3);font-weight:500}
+.si-sep{width:1px;height:30px;background:var(--bdr2);margin:0 4px;flex-shrink:0}
+.si-item.s-alive .si-num{color:var(--green)}
+.si-item.s-dead .si-num{color:var(--red)}
+.si-item.s-wolf .si-num{color:var(--accent)}
+
+/* ── PHASE COMPACT ── */
+.phase-compact{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.phase-btn-c{
+  padding:9px 10px;border-radius:10px;border:2px solid transparent;
+  font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .2s;
+}
+.phase-btn-c.phase-btn-day{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber)}
+.phase-btn-c.phase-btn-night{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.phase-btn-c.active-phase{opacity:.35;cursor:default;pointer-events:none}
+.phase-btn-c:not(.active-phase):hover{filter:brightness(.93)}
+
+/* ── VOTE GRID COMPACT ── */
+.vote-grid-compact{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.vote-chip-c{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 8px;border-radius:8px;
+  border:1px solid var(--bdr);background:var(--bg3);
+  cursor:pointer;transition:all .12s;
+}
+.vote-chip-c:hover{border-color:var(--accent);background:var(--accent-bg)}
+.vote-chip-c.selected{border-color:var(--red);background:var(--red-bg)}
+.vote-chip-c .vote-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.vote-chip-c .vc-name{flex:1;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vote-chip-c .vc-count{font-size:14px;font-weight:800}
+
+.overview-player-chip.prot-chip{border-color:var(--blue);box-shadow:0 0 0 1px rgba(29,78,216,.2)}
+
+/* ── DEAD COMPACT ── */
+.dead-compact-list{display:flex;flex-wrap:wrap;gap:5px}
+.dead-chip-item{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 8px;border-radius:7px;background:var(--bg3);
+  font-size:12px;opacity:.6;
+}
+
+/* toast */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;z-index:999;
+  transition:transform .3s;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:600px){
+  .phase-big{grid-template-columns:1fr 1fr}
+  .timer-display{font-size:40px}
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="app">
+
+<!-- HEADER -->
+<header id="appHeader">
+  <div class="logo" id="headerLogo">🐺</div>
+  <h1>Quản Trò Ma Sói</h1>
+  <span class="phase-pill pill-day" id="phasePill">Ngày 0</span>
+</header>
+
+<!-- NAV -->
+<nav id="appNav">
+  <button class="active" onclick="showTab('dashboard')">📋 Tổng quan</button>
+  <button onclick="showTab('skills')">✨ Kỹ năng</button>
+  <button onclick="showTab('players')">👥 Người chơi</button>
+  <button onclick="showTab('roles')">🎭 Roles</button>
+  <button onclick="showTab('setup')">⚙️ Khởi tạo</button>
+  <button onclick="showTab('log')">📜 Nhật ký</button>
+  <button onclick="showTab('data')">💾 Dữ liệu</button>
+</nav>
+
+<div class="main">
+
+<!-- ══════════ TAB: DASHBOARD ══════════ -->
+<div id="tab-dashboard" class="tab-content active">
+
+  <!-- Cảnh báo Sói Thiếu Niên -->
+  <div class="big-warn" id="wolfCubWarn" style="display:none">
+    <h4>⚠️ Sói Thiếu Niên chưa hoàn thành nhiệm vụ!</h4>
+    <p style="font-size:13px;margin-bottom:10px">Chưa nói "sói" hoặc "gâu" trong ngày hôm nay.</p>
+    <button class="btn btn-danger btn-sm" onclick="killWolfCub()">💀 Xử lý tử vong</button>
+  </div>
+
+  <!-- Game Over banner -->
+  <div id="gameOverBanner" style="display:none" class="card" onclick="openModal('gameOverModal')" style="cursor:pointer;text-align:center;background:var(--accent-bg);border-color:var(--accent);cursor:pointer">
+    <div style="font-size:28px;margin-bottom:4px" id="gobEmoji">🏆</div>
+    <div style="font-weight:800;font-size:16px;color:var(--accent-text)" id="gobTitle">Game kết thúc!</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px">Nhấn để xem kết quả & chơi lại</div>
+  </div>
+
+  <!-- Cảnh báo Cupid -->
+  <div class="a-warn alert" id="cupidDeathWarn" style="display:none"></div>
+
+  <!-- CARD TỔNG HỢP: Stats + Chuyển pha -->
+  <div class="card" style="padding:12px">
+    <!-- Stats inline -->
+    <div class="stats-inline">
+      <div class="si-item"><span class="si-num" id="statTotal">0</span><span class="si-lbl">Tổng</span></div>
+      <div class="si-sep"></div>
+      <div class="si-item s-alive"><span class="si-num" id="statAlive">0</span><span class="si-lbl">Sống</span></div>
+      <div class="si-sep"></div>
+      <div class="si-item s-dead"><span class="si-num" id="statDead">0</span><span class="si-lbl">Chết</span></div>
+      <div class="si-sep"></div>
+      <div class="si-item s-wolf"><span class="si-num" id="statWolf">0</span><span class="si-lbl">🐺 Sói</span></div>
+    </div>
+    <!-- Chuyển pha -->
+    <div class="phase-compact">
+      <button class="phase-btn-c phase-btn-day" id="btnDay" onclick="setPhase('day')">☀️ Ban Ngày</button>
+      <button class="phase-btn-c phase-btn-night" id="btnNight" onclick="setPhase('night')">🌙 Ban Đêm</button>
+    </div>
+  </div>
+
+  <!-- Timer thảo luận (chỉ hiện ban ngày) -->
+  <div class="card" id="timerCard" style="padding:12px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px">
+        <div class="timer-label" id="timerLabel" style="margin-bottom:2px">Thảo luận</div>
+        <div class="timer-display ok" id="timerDisplay" style="font-size:36px">05:00</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div class="timer-presets" style="justify-content:flex-end">
+          <button class="preset-btn" onclick="setTimerPreset(120)">2p</button>
+          <button class="preset-btn" onclick="setTimerPreset(180)">3p</button>
+          <button class="preset-btn" onclick="setTimerPreset(300)">5p</button>
+          <button class="preset-btn" onclick="setTimerPreset(600)">10p</button>
+          <button class="preset-btn" onclick="openCustomTimer()">✏️</button>
+        </div>
+        <div class="timer-controls" style="gap:6px">
+          <button class="btn btn-success btn-sm" id="btnTimerStart" onclick="startTimer()">▶ Start</button>
+          <button class="btn btn-sm" id="btnTimerPause" onclick="pauseTimer()" style="display:none">⏸</button>
+          <button class="btn btn-warning btn-sm" onclick="resetTimer()">↺</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vote (chỉ hiện ban ngày) -->
+  <div class="card" id="voteCard" style="padding:12px">
+    <div class="sec-hdr" style="margin-bottom:8px">
+      <div class="sec-title">🗳️ Bỏ phiếu</div>
+      <button class="btn btn-sm" onclick="clearVotes()">Xóa</button>
+    </div>
+    <div id="voteGrid" class="vote-grid-compact"></div>
+    <div style="margin-top:8px;display:none" id="voteResult">
+      <div class="a-danger alert" id="voteResultText" style="padding:8px 12px;font-size:13px"></div>
+      <button class="btn btn-danger btn-sm" style="margin-top:6px" id="voteKillBtn">💀 Xử tử</button>
+    </div>
+  </div>
+
+  <!-- Tổng quan tên - role (grid) -->
+  <div class="card" id="overviewNameCard" style="display:none;padding:12px">
+    <div class="sec-hdr" style="margin-bottom:8px">
+      <div class="sec-title">👥 Người chơi</div>
+      <button class="btn btn-sm" onclick="toggleRolesVisible()" id="rolesToggleBtn2">👁 Role</button>
+    </div>
+    <div id="overviewNameGrid" class="overview-name-grid"></div>
+  </div>
+
+  <!-- Người chết (compact) -->
+  <div class="card" id="deadSection" style="display:none;padding:12px">
+    <div class="sec-title" style="margin-bottom:8px;font-size:13px">💀 Đã chết (<span id="deadCount">0</span>)</div>
+    <div id="deadPlayers" class="dead-compact-list"></div>
+  </div>
+
+  <!-- Hidden elements still needed for renderAlivePlayers compat -->
+  <div style="display:none">
+    <div id="aliveCount">0</div>
+    <button id="rolesToggleBtn" onclick="toggleRolesVisible()"></button>
+    <div id="alivePlayers"></div>
+  </div>
+
+</div>
+
+<!-- ══════════ TAB: PLAYERS ══════════ -->
+<div id="tab-players" class="tab-content">
+
+  <div class="card">
+    <div class="card-title">Thêm hàng loạt</div>
+    <div class="form-group">
+      <label>Dán danh sách tên (mỗi dòng 1 người)</label>
+      <textarea id="bulkNames" placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C" style="min-height:90px"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="bulkAddPlayers()">➕ Thêm tất cả</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="addPlayerTitle">Thêm người chơi</div>
+    <div class="form-group">
+      <label>Tên</label>
+      <input type="text" id="playerNameInput" placeholder="Tên người chơi" onkeydown="if(event.key==='Enter')addOrUpdatePlayer()">
+    </div>
+    <div class="form-group">
+      <label>Ghi chú</label>
+      <input type="text" id="playerNoteInput" placeholder="Ghi chú (tuỳ chọn)" onkeydown="if(event.key==='Enter')addOrUpdatePlayer()">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addOrUpdatePlayer()">💾 Lưu</button>
+      <button class="btn" onclick="cancelEditPlayer()" id="cancelEditBtn" style="display:none">✖ Hủy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Tìm theo tên..." oninput="renderPlayerListTab()">
+    </div>
+    <div id="playerListTab"></div>
+  </div>
+
+</div>
+
+<!-- ══════════ TAB: SETUP ══════════ -->
+<div id="tab-setup" class="tab-content">
+  <div class="card">
+    <div class="card-title">Phân role</div>
+    <div class="a-info alert">Cài đặt số lượng mỗi role → nhấn Chia Role Ngẫu Nhiên.</div>
+    <div id="roleSetupList"></div>
+    <div style="margin-top:8px;font-size:13px;color:var(--text2)">
+      Tổng role: <strong id="totalRoleCount" style="color:var(--accent)">0</strong>
+      / <strong id="totalPlayerCount">0</strong> người chơi
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="assignRoles()">🎲 Chia Role Ngẫu Nhiên</button>
+      <button class="btn btn-success" onclick="autoBalance()">⚖️ Cân bằng</button>
+      <button class="btn" onclick="resetRoleCounts()">🔄 Xóa số lượng</button>
+    </div>
+  </div>
+  <div class="card" id="balanceCard" style="display:none;padding:12px">
+    <div class="sec-hdr" style="margin-bottom:8px"><div class="sec-title">⚖️ Gợi ý cân bằng</div><button class="btn btn-sm" onclick="document.getElementById('balanceCard').style.display=\'none\'">✕</button></div>
+    <div id="balanceResult"></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-primary btn-sm" onclick="applyBalance()">✓ Áp dụng</button>
+    </div>
+  </div>
+
+  <div class="card" id="assignCard" style="display:none">
+    <div class="card-title">Phân công hiện tại</div>
+    <div id="assignList"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: SKILLS ══════════ -->
+<div id="tab-skills" class="tab-content">
+  <div id="noSkillsMsg" class="empty">Chưa phân role. Hãy khởi tạo game trước.</div>
+
+  <!-- 🐺 Sói ăn thịt (đêm) -->
+  <div class="card" id="sk-wolfeat" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🐺 Sói chọn mục tiêu</div><span id="sk-wolfeat-done" class="used-tag" style="display:none">Đã chọn</span></div>
+    <div id="sk-wolfeat-body"></div>
+  </div>
+
+  <div class="card" id="sk-wolfcub" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🐾 Sói Thiếu Niên</div></div>
+    <div id="sk-wolfcub-body"></div>
+  </div>
+  <div class="card" id="sk-witch" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🧙 Phù Thủy</div></div>
+    <div id="sk-witch-body"></div>
+  </div>
+  <div class="card" id="sk-seer" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🔮 Tiên Tri</div></div>
+    <div id="sk-seer-body"></div>
+  </div>
+  <div class="card" id="sk-guard" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🛡 Bảo Vệ</div></div>
+    <div id="sk-guard-body"></div>
+  </div>
+  <div class="card" id="sk-robber" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🗡 Kẻ Cướp</div></div>
+    <div id="sk-robber-body"></div>
+  </div>
+  <div class="card" id="sk-revealer" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">👁 Kẻ Phơi Bày</div><span id="sk-revealer-used" class="used-tag" style="display:none">Đã dùng</span></div>
+    <div id="sk-revealer-body"></div>
+  </div>
+  <div class="card" id="sk-cupid" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">💘 Cupid</div><span id="sk-cupid-used" class="used-tag" style="display:none">Đã dùng</span></div>
+    <div id="sk-cupid-body"></div>
+  </div>
+  <div class="card" id="sk-chandoi" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">😞 Chán Đời</div></div>
+    <div id="sk-chandoi-body"></div>
+  </div>
+  <div class="card" id="sk-hunter" style="display:none">
+    <div class="skill-hdr"><div class="skill-name">🏹 Thợ Săn</div></div>
+    <div id="sk-hunter-body"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: LOG ══════════ -->
+<div id="tab-log" class="tab-content">
+  <div class="card">
+    <div class="sec-hdr">
+      <div class="sec-title">📜 Nhật ký</div>
+      <button class="btn btn-sm btn-danger" onclick="clearLog()">🗑 Xóa tất cả</button>
+    </div>
+    <div class="ftabs" id="logFtabs"><div class="ftab active" onclick="filterLog('all',this)">Tất cả</div></div>
+    <div id="logList" class="log-list"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: ROLES ══════════ -->
+<div id="tab-roles" class="tab-content">
+
+  <!-- AI Role Assistant -->
+  <div class="card" id="aiRoleCard">
+    <div class="sec-hdr" style="margin-bottom:8px">
+      <div class="sec-title">🤖 AI Role Assistant</div>
+      <span style="font-size:10px;color:var(--text3);font-weight:600;padding:2px 7px;border-radius:99px;background:var(--accent-bg);color:var(--accent-text)">Claude AI</span>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Mô tả role mới bằng ngôn ngữ tự nhiên — AI tự điền tên, phe, emoji và kỹ năng.</p>
+    <div class="form-group">
+      <textarea id="aiRoleInput" placeholder="VD: Một tên sói cải trang thành dân làng, ban ngày có thể xem danh sách bỏ phiếu trước 1 tiếng&#10;VD: Thầy thuốc làng, mỗi đêm chữa lành 1 người khỏi bị đầu độc&#10;VD: Kẻ phản bội — dân làng nhưng thắng cùng sói" style="min-height:70px"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" id="aiRoleBtn" onclick="aiGenerateRole()">✨ Tạo role với AI</button>
+      <span id="aiRoleStatus" style="font-size:12px;color:var(--text3)"></span>
+    </div>
+    <!-- Preview -->
+    <div id="aiRolePreview" style="display:none;margin-top:12px;padding:12px;background:var(--bg3);border-radius:10px;border:1px solid var(--bdr)">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Kết quả gợi ý</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+        <span id="aiRoleEmoji" style="font-size:28px">❓</span>
+        <div>
+          <div id="aiRoleNameDisplay" style="font-weight:800;font-size:16px"></div>
+          <span id="aiRoleTeamBadge" class="role-badge" style="margin-top:3px;display:inline-flex"></span>
+        </div>
+      </div>
+      <p id="aiRoleSkillDesc" style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6"></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="aiConfirmAddRole()">➕ Thêm vào game</button>
+        <button class="btn btn-sm" onclick="document.getElementById('aiRolePreview').style.display=\'none\'">✕ Bỏ qua</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-hdr">
+      <div class="sec-title">🎭 Danh sách role</div>
+      <button class="btn btn-primary btn-sm" onclick="showAddRoleModal()">➕ Thêm role</button>
+    </div>
+    <div id="rolesList"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: DATA ══════════ -->
+<div id="tab-data" class="tab-content">
+  <div class="card">
+    <div class="card-title">🤖 Cài đặt AI</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Nhập Anthropic API Key để dùng tính năng AI tạo role. Key được lưu trên máy, không gửi đi đâu ngoài Anthropic.</p>
+    <div class="form-group">
+      <label>Anthropic API Key</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="flex:1;font-family:monospace;font-size:13px">
+        <button class="btn btn-primary btn-sm" onclick="saveApiKey()">💾 Lưu</button>
+      </div>
+    </div>
+    <div id="apiKeyStatus" style="font-size:12px;margin-top:4px;color:var(--text3)"></div>
+    <p style="font-size:11px;color:var(--text3);margin-top:6px">Lấy API key tại <strong>console.anthropic.com</strong></p>
+  </div>
+  <div class="card">
+    <div class="card-title">Quản lý dữ liệu</div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="exportJSON()">⬇ Xuất JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">⬆ Nhập JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-danger" onclick="confirmReset()">⚠️ Reset toàn bộ game</button>
+    <p style="font-size:12px;color:var(--text3);margin-top:6px">Xóa tất cả dữ liệu và bắt đầu lại.</p>
+  </div>
+</div>
+
+</div><!-- end .main -->
+</div><!-- end .app -->
+
+<!-- ════════════════ MODALS ════════════════ -->
+
+<!-- Confirm -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal">
+    <h3 id="confirmTitle">Xác nhận</h3>
+    <p id="confirmMsg" style="font-size:14px;color:var(--text2)"></p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('confirmModal')">Hủy</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kill -->
+<div class="modal-overlay hidden" id="killModal">
+  <div class="modal">
+    <h3>💀 Đánh dấu tử vong</h3>
+    <div class="form-group">
+      <label>Người chơi</label>
+      <select id="killSelect"></select>
+    </div>
+    <div class="form-group">
+      <label>Lý do</label>
+      <input type="text" id="killReason" placeholder="bị sói ăn / bị làng xử tử...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('killModal')">Hủy</button>
+      <button class="btn btn-danger" onclick="confirmKill()">💀 Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit player -->
+<div class="modal-overlay hidden" id="editPlayerModal">
+  <div class="modal">
+    <h3>✏️ Sửa người chơi</h3>
+    <input type="hidden" id="editPId">
+    <div class="form-group"><label>Tên</label><input type="text" id="editPName"></div>
+    <div class="form-group"><label>Role hiện tại</label><select id="editPRole"></select></div>
+    <div class="form-group"><label>Ghi chú</label><input type="text" id="editPNote"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('editPlayerModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveEditPlayer()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/edit role -->
+<div class="modal-overlay hidden" id="addRoleModal">
+  <div class="modal">
+    <h3>🎭 Thêm / Sửa Role</h3>
+    <input type="hidden" id="editRoleId">
+    <input type="hidden" id="newRoleEffect">
+    <input type="hidden" id="newRolePower">
+    <div class="form-group">
+      <label>Tên role</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="newRoleName" placeholder="VD: Thầy Thuốc, Kẻ Phản Bội..." style="flex:1">
+        <button class="btn btn-sm" id="aiSuggestBtn" onclick="aiSuggestFromName()" title="AI tự điền phe, emoji, kỹ năng" style="white-space:nowrap;background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)">✨ AI</button>
+      </div>
+    </div>
+    <!-- AI status bar -->
+    <div id="aiSuggestStatus" style="display:none;font-size:12px;padding:8px 10px;border-radius:8px;margin-bottom:10px;background:var(--bg3);color:var(--text2)">⏳ AI đang phân tích...</div>
+    <!-- AI skill preview -->
+    <div id="aiSkillPreview" style="display:none;font-size:12px;padding:8px 10px;border-radius:8px;margin-bottom:10px;background:var(--blue-bg);color:var(--blue-text);border:1px solid var(--blue);line-height:1.5">
+      <strong>🤖 Kỹ năng:</strong> <span id="aiSkillText"></span>
+    </div>
+    <div class="form-group"><label>Phe</label>
+      <select id="newRoleTeam">
+        <option value="wolf">🐺 Sói</option>
+        <option value="village" selected>🏘 Làng</option>
+        <option value="other">⚡ Khác</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Emoji</label><input type="text" id="newRoleEmoji" placeholder="🐺"></div>
+    <div class="form-group" id="roleSkillGroup">
+      <label>Kỹ năng <span style="font-weight:400;color:var(--text3)">(ghi chú cho quản trò)</span></label>
+      <textarea id="newRoleSkill" placeholder="Mô tả kỹ năng của role này..." style="min-height:60px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addRoleModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveRole()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Seer result -->
+<div class="modal-overlay hidden" id="seerModal">
+  <div class="modal">
+    <h3>🔮 Kết quả Tiên Tri</h3>
+    <div id="seerResult" style="text-align:center;padding:16px 0"></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('seerModal')">Đóng</button></div>
+  </div>
+</div>
+
+<!-- Revealer result -->
+<div class="modal-overlay hidden" id="revealerModal">
+  <div class="modal">
+    <h3>👁 Kết quả Kẻ Phơi Bày</h3>
+    <div id="revealerResult" style="text-align:center;padding:16px 0"></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('revealerModal')">Đóng</button></div>
+  </div>
+</div>
+
+<!-- Robber swap -->
+<div class="modal-overlay hidden" id="robberModal">
+  <div class="modal">
+    <h3>🗡 Kẻ Cướp đổi role</h3>
+    <div class="form-group"><label>Kẻ Cướp</label><select id="robberSelf"></select></div>
+    <div class="form-group"><label>Đổi với</label><select id="robberTarget"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('robberModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="confirmRobber()">🔄 Đổi role</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hunter -->
+<div class="modal-overlay hidden" id="hunterModal">
+  <div class="modal">
+    <h3>🏹 Thợ Săn bắn mục tiêu</h3>
+    <div class="form-group"><label>Thợ Săn</label><select id="hunterSelf"></select></div>
+    <div class="form-group"><label>Bắn người</label><select id="hunterTarget"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('hunterModal')">Hủy</button>
+      <button class="btn btn-danger" onclick="confirmHunter()">🏹 Bắn!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cupid -->
+<div class="modal-overlay hidden" id="cupidModal">
+  <div class="modal">
+    <h3>💘 Cupid – Chọn cặp đôi</h3>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Chỉ hoạt động đêm đầu tiên.</p>
+    <div class="form-group"><label>Người yêu thứ 1</label><select id="cupidP1"></select></div>
+    <div class="form-group"><label>Người yêu thứ 2</label><select id="cupidP2"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('cupidModal')">Hủy</button>
+      <button class="btn" style="background:var(--pink);color:#fff;border-color:var(--pink)" onclick="confirmCupid()">💘 Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Witch -->
+<div class="modal-overlay hidden" id="witchModal">
+  <div class="modal">
+    <h3 id="witchTitle">🧙 Phù Thủy</h3>
+    <div class="form-group"><label>Chọn người</label><select id="witchTarget"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('witchModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="confirmWitch()">✓ Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guard -->
+<div class="modal-overlay hidden" id="guardModal">
+  <div class="modal">
+    <h3>🛡 Bảo Vệ</h3>
+    <div class="form-group"><label>Bảo vệ đêm nay</label><select id="guardTarget"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('guardModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="confirmGuard()">🛡 Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit log -->
+<div class="modal-overlay hidden" id="editLogModal">
+  <div class="modal">
+    <h3>✏️ Sửa nhật ký</h3>
+    <input type="hidden" id="editLogId">
+    <div class="form-group"><label>Nội dung</label><textarea id="editLogText"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('editLogModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveEditLog()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// DEFAULT DATA
+// ════════════════════════════════════════
+const DEFAULT_ROLES=[
+  {id:'masoi',name:'Ma Sói',team:'wolf',emoji:'🐺'},
+  {id:'soithieunien',name:'Sói Thiếu Niên',team:'wolf',emoji:'🐾'},
+  {id:'tienTri',name:'Tiên Tri',team:'village',emoji:'🔮'},
+  {id:'phuThuy',name:'Phù Thủy',team:'village',emoji:'🧙'},
+  {id:'baoVe',name:'Bảo Vệ',team:'village',emoji:'🛡'},
+  {id:'thoSan',name:'Thợ Săn',team:'village',emoji:'🏹'},
+  {id:'keCuop',name:'Kẻ Cướp',team:'other',emoji:'🗡'},
+  {id:'kePhoBay',name:'Kẻ Phơi Bày',team:'other',emoji:'👁'},
+  {id:'chanDoi',name:'Chán Đời',team:'other',emoji:'😞'},
+  {id:'cupid',name:'Cupid',team:'village',emoji:'💘'},
+  {id:'danLang',name:'Dân Làng',team:'village',emoji:'👤'},
+];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let S={
+  players:[],roles:[],
+  day:0,phase:'day',
+  rolesVisible:false,
+  log:[],
+  witchSave:true,witchPoison:true,
+  revealerUsed:false,
+  cupidUsed:false,cupidPair:null,
+  wolfCubDone:{},
+  guardTarget:null,
+  wolfEatTarget:null,   // chosen wolf victim this night
+  votes:{},
+  timerSecs:300,
+  timerPreset:300,
+  nextId:1,nextLogId:1,
+  gameOver:false,
+};
+
+let timerInterval=null;
+let timerRunning=false;
+let editingPId=null;
+let witchAction=null;
+let logFilter='all';
+
+// ════════════════════════════════════════
+// STORAGE
+// ════════════════════════════════════════
+// ── iOS-safe localStorage (fallback to memory if blocked) ──
+let _memStore = {};
+const LS = {
+  getItem(k){ try{ return localStorage.getItem(k); }catch(e){ return _memStore[k]??null; } },
+  setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){ _memStore[k]=v; } },
+  removeItem(k){ try{ localStorage.removeItem(k); }catch(e){ delete _memStore[k]; } }
+};
+function save(){ LS.setItem('masoi2', JSON.stringify(S)); }
+function load(){
+  try{
+    const r = LS.getItem('masoi2');
+    if(r){ const d=JSON.parse(r); Object.assign(S,d); }
+    else S.roles = JSON.parse(JSON.stringify(DEFAULT_ROLES));
+  }catch(e){ S.roles = JSON.parse(JSON.stringify(DEFAULT_ROLES)); }
+}
+
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
+function applyTheme(){
+  if(S.phase==='night'){
+    document.documentElement.classList.add('night');
+    document.getElementById('headerLogo').textContent='🌙';
+  } else {
+    document.documentElement.classList.remove('night');
+    document.getElementById('headerLogo').textContent='🐺';
+  }
+}
+
+// ════════════════════════════════════════
+// UTIL
+// ════════════════════════════════════════
+function uid(){return'p'+(S.nextId++)}
+function lid(){return'l'+(S.nextLogId++)}
+function phaseLabel(){
+  if(S.day===0)return'Ngày 0';
+  return S.phase==='day'?`Ngày ${S.day}`:`Đêm ${S.day}`;
+}
+function addLog(text){
+  S.log.unshift({id:lid(),phase:S.phase,day:S.day,label:phaseLabel(),text,ts:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})});
+  save();
+}
+function getRole(id){return S.roles.find(r=>r.id===id)||{name:id||'?',team:'village',emoji:'❓'}}
+function teamClass(t){return t==='wolf'?'t-wolf':t==='village'?'t-village':'t-other'}
+function alive(){return S.players.filter(p=>p.alive)}
+function dead(){return S.players.filter(p=>!p.alive)}
+
+const COLORS=['#7c3aed','#059669','#dc2626','#d97706','#2563eb','#db2777','#0891b2','#65a30d','#ea580c','#0369a1'];
+function avatarColor(n){let h=0;for(let c of n)h=(h*31+c.charCodeAt(0))&0xFFFF;return COLORS[h%COLORS.length]}
+function initials(n){return n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?'}
+
+function toast(msg,ms=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+function fmtTime(s){
+  const m=Math.floor(s/60),sec=s%60;
+  return`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+// ════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════
+const TAB_NAMES=['dashboard','skills','players','roles','setup','log','data'];
+function showTab(name){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach((b,i)=>{b.classList.toggle('active',TAB_NAMES[i]===name)});
+  document.getElementById('tab-'+name).classList.add('active');
+  renderAll();
+}
+
+// ════════════════════════════════════════
+// RENDER ALL
+// ════════════════════════════════════════
+function renderAll(){
+  applyTheme();
+  renderStats();
+  renderPhasePill();
+  renderPhaseButtons();
+  renderAlivePlayers();
+  renderDeadPlayers();
+  renderVoteGrid();
+  renderPlayerListTab();
+  renderSetup();
+  renderSkills();
+  renderLog();
+  renderRoles();
+  renderWolfCubWarn();
+  renderCupidDeathWarn();
+  renderOverviewNames();
+  updateTimerUI();
+  // Show/hide day-only sections
+  const isDay=S.phase==='day';
+  document.getElementById('timerCard').style.display=isDay&&!S.gameOver?'':'none';
+  document.getElementById('voteCard').style.display=isDay&&!S.gameOver?'':'none';
+  // Game over banner
+  const gob=document.getElementById('gameOverBanner');
+  if(gob)gob.style.display=S.gameOver?'':'none';
+}
+
+// ════════════════════════════════════════
+// PHASE
+// ════════════════════════════════════════
+function setPhase(newPhase){
+  if(S.phase===newPhase)return;
+
+  // day→night: increment day, enter night
+  if(S.phase==='day'&&newPhase==='night'){
+    S.day++;
+    S.phase='night';
+    S.votes={};
+    stopTimer();
+    S.timerSecs=S.timerPreset;
+    addLog(`🌙 Bắt đầu Đêm ${S.day}`);
+    toast('🌙 Ban đêm bắt đầu...');
+  }
+  // night→day: apply wolf eat, check wolf cub, then enter day
+  else if(S.phase==='night'&&newPhase==='day'){
+    const cub=S.players.find(p=>p.currentRole==='soithieunien'&&p.alive);
+    if(cub){
+      const key=`night-${S.day}`;
+      if(!S.wolfCubDone[key]){
+        if(!confirm('Sói Thiếu Niên chưa hoàn thành nhiệm vụ đêm qua!\nChuyển sang ban ngày? (Có thể xử lý sau.)'))return;
+      }
+    }
+    S.phase='day';
+    // Apply wolf eat (if not protected) — must check guardTarget BEFORE clearing it
+    if(S.wolfEatTarget){
+      const victim=S.players.find(p=>p.id===S.wolfEatTarget);
+      if(victim&&victim.alive){
+        if(S.guardTarget===S.wolfEatTarget){
+          addLog(`🛡 ${victim.name} được bảo vệ khỏi nanh sói!`);
+        } else {
+          // Check if victim is Bảo Vệ and is protecting themselves
+          killPlayer(S.wolfEatTarget,'bị sói ăn thịt trong đêm');
+        }
+      }
+      S.wolfEatTarget=null;
+    }
+    S.guardTarget=null;
+    addLog(`☀️ Bắt đầu Ngày ${S.day}`);
+    toast('☀️ Ban ngày bắt đầu!');
+  }
+  save();renderAll();
+}
+
+// ════════════════════════════════════════
+// STATS & HEADER
+// ════════════════════════════════════════
+function renderStats(){
+  const wolves=alive().filter(p=>getRole(p.currentRole).team==='wolf').length;
+  document.getElementById('statTotal').textContent=S.players.length;
+  document.getElementById('statAlive').textContent=alive().length;
+  document.getElementById('statDead').textContent=dead().length;
+  document.getElementById('statWolf').textContent=wolves;
+}
+function renderPhasePill(){
+  const el=document.getElementById('phasePill');
+  el.textContent=phaseLabel();
+  el.className='phase-pill '+(S.phase==='night'?'pill-night':'pill-day');
+}
+function renderPhaseButtons(){
+  document.getElementById('btnDay').classList.toggle('active-phase',S.phase==='day');
+  document.getElementById('btnNight').classList.toggle('active-phase',S.phase==='night');
+}
+
+// ════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════
+function updateTimerUI(){
+  const disp=document.getElementById('timerDisplay');
+  disp.textContent=fmtTime(S.timerSecs);
+  disp.className='timer-display '+(S.timerSecs<=30&&S.timerSecs>0?'warn':'ok');
+  if(S.timerSecs===0)disp.className='timer-display warn';
+  document.getElementById('btnTimerStart').style.display=timerRunning?'none':'';
+  document.getElementById('btnTimerPause').style.display=timerRunning?'':'none';
+  // label
+  document.getElementById('timerLabel').textContent=
+    timerRunning?'Đang thảo luận...':S.timerSecs===0?'⏰ Hết giờ!':'Chờ bắt đầu';
+}
+function startTimer(){
+  if(timerRunning||S.timerSecs===0)return;
+  timerRunning=true;
+  timerInterval=setInterval(()=>{
+    if(S.timerSecs>0){
+      S.timerSecs--;
+      updateTimerUI();
+      if(S.timerSecs===0){
+        stopTimer();
+        toast('⏰ Hết thời gian thảo luận! Bắt đầu bỏ phiếu.',3000);
+        addLog('⏰ Hết thời gian thảo luận');
+      }
+    }
+  },1000);
+  updateTimerUI();
+}
+function pauseTimer(){
+  clearInterval(timerInterval);timerRunning=false;updateTimerUI();
+}
+function stopTimer(){
+  clearInterval(timerInterval);timerRunning=false;
+}
+function resetTimer(){
+  stopTimer();S.timerSecs=S.timerPreset;updateTimerUI();
+}
+function setTimerPreset(s){
+  stopTimer();S.timerSecs=s;S.timerPreset=s;updateTimerUI();
+}
+function applyCustomTime(){
+  const m=parseInt(document.getElementById('customMin').value)||0;
+  const s=parseInt(document.getElementById('customSec').value)||0;
+  const total=m*60+s;
+  if(total<=0)return;
+  setTimerPreset(total);
+  toast(`⏱ Đặt ${fmtTime(total)}`);
+}
+function openCustomTimer(){openModal('customTimerModal');}
+
+// ════════════════════════════════════════
+// VOTE
+// ════════════════════════════════════════
+function renderVoteGrid(){
+  const el=document.getElementById('voteGrid');
+  const aPlayers=alive();
+  if(!aPlayers.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">Không có người sống.</p>';return;}
+  if(!S.votes)S.votes={};
+  el.innerHTML=aPlayers.map(p=>{
+    const v=S.votes[p.id]||0;
+    const col=avatarColor(p.name);
+    return`<div class="vote-chip-c${S.selectedVote===p.id?' selected':''}" onclick="castVote('${p.id}')">
+      <div class="vote-avatar" style="background:${col}22;color:${col}">${initials(p.name)}</div>
+      <div class="vc-name">${p.name}</div>
+      <span class="vc-count" style="color:${v>0?'var(--red)':'var(--text3)'}">${v||''}</span>
+    </div>`;
+  }).join('');
+  // Show result
+  let maxV=0,maxP=null;
+  for(const [id,v] of Object.entries(S.votes)){if(v>maxV){maxV=v;maxP=id}}
+  const res=document.getElementById('voteResult');
+  if(maxP&&maxV>0){
+    const pp=S.players.find(x=>x.id===maxP);
+    res.style.display='';
+    document.getElementById('voteResultText').textContent=`${pp?.name||'?'} — ${maxV} phiếu`;
+    document.getElementById('voteKillBtn').onclick=()=>{
+      if(confirm(`Xử tử ${pp?.name}?`)){killPlayer(maxP,'bị làng bỏ phiếu xử tử',true);S.votes={};renderAll();}
+    };
+  } else {
+    res.style.display='none';
+  }
+}
+function castVote(id){
+  if(!S.votes)S.votes={};
+  S.votes[id]=(S.votes[id]||0)+1;
+  renderVoteGrid();
+}
+function clearVotes(){S.votes={};S.selectedVote=null;renderVoteGrid();}
+
+// ════════════════════════════════════════
+// PLAYER CARD HTML
+// ════════════════════════════════════════
+function playerCardHTML(p,actions){
+  const role=getRole(p.currentRole);
+  const orig=p.originalRole&&p.originalRole!==p.currentRole?getRole(p.originalRole):null;
+  const col=avatarColor(p.name);
+  const love=S.cupidPair&&S.cupidPair.includes(p.id)?'💕':'';
+  const prot=p.id===S.guardTarget?'protected':'';
+  const roleHTML=S.rolesVisible
+    ?`<span class="role-badge ${teamClass(role.team)}">${role.emoji} ${role.name}</span>${orig?`<span style="font-size:10px;color:var(--text3)"> (gốc:${orig.name})</span>`:''}`
+    :`<span class="role-badge t-hidden">Ẩn</span>`;
+  const noteHTML=p.note?`<span>📝 ${p.note}</span>`:'';
+  const protHTML=prot?`<span style="color:var(--blue);font-size:10px">🛡 Được bảo vệ</span>`:'';
+  let btns='';
+  if(actions){
+    if(p.alive){
+      btns=`<button class="btn btn-icon btn-sm" onclick="openEditPlayer('${p.id}')" title="Sửa">✏️</button>
+            <button class="btn btn-icon btn-sm btn-danger" onclick="openKillModal('${p.id}')" title="Chết">💀</button>`;
+    } else {
+      btns=`<button class="btn btn-icon btn-sm" onclick="openEditPlayer('${p.id}')" title="Sửa">✏️</button>
+            <button class="btn btn-icon btn-sm btn-success" onclick="reviveDirect('${p.id}')" title="Hồi sinh">💚</button>
+            <button class="btn btn-icon btn-sm" onclick="deletePlayer('${p.id}')" title="Xóa">🗑</button>`;
+    }
+  }
+  return`<div class="player-card${p.alive?'':' dead'} ${prot}">
+    <div class="avatar" style="background:${col}22;color:${col}">${initials(p.name)}</div>
+    <div class="pinfo">
+      <div class="pname">${p.name} ${love}</div>
+      <div class="pmeta">${roleHTML}${noteHTML}${protHTML}</div>
+    </div>
+    ${btns?`<div class="pactions">${btns}</div>`:''}
+  </div>`;
+}
+
+function renderAlivePlayers(){
+  // Update hidden aliveCount element for compatibility
+  const el=document.getElementById('aliveCount');
+  if(el)el.textContent=alive().length;
+  // Hidden alivePlayers div kept for any skill references
+  const ap=document.getElementById('alivePlayers');
+  if(ap)ap.innerHTML='';
+}
+function renderDeadPlayers(){
+  const sec=document.getElementById('deadSection');
+  const list=dead();
+  const countEl=document.getElementById('deadCount');
+  if(countEl)countEl.textContent=list.length;
+  if(!list.length){sec.style.display='none';return;}
+  sec.style.display='';
+  document.getElementById('deadPlayers').innerHTML=list.map(p=>{
+    const col=avatarColor(p.name);
+    const r=getRole(p.currentRole);
+    const roleStr=S.rolesVisible?` · ${r.emoji}${r.name}`:'';
+    return`<div class="dead-chip-item">
+      <div class="avatar" style="background:${col}22;color:${col};width:20px;height:20px;font-size:9px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800">${initials(p.name)}</div>
+      <span>${p.name}${roleStr}</span>
+    </div>`;
+  }).join('');
+}
+function toggleRolesVisible(){
+  S.rolesVisible=!S.rolesVisible;save();
+  const label=S.rolesVisible?'🙈 Ẩn role':'👁 Role';
+  ['rolesToggleBtn','rolesToggleBtn2'].forEach(id=>{const b=document.getElementById(id);if(b)b.textContent=label;});
+  renderOverviewNames();renderDeadPlayers();
+}
+
+// ════════════════════════════════════════
+// PLAYERS TAB
+// ════════════════════════════════════════
+function renderPlayerListTab(){
+  const el=document.getElementById('playerListTab');
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  let list=S.players;
+  if(q)list=list.filter(p=>p.name.toLowerCase().includes(q));
+  el.innerHTML=list.length?list.map(p=>playerCardHTML(p,true)).join(''):'<div class="empty">Không tìm thấy</div>';
+}
+function bulkAddPlayers(){
+  const raw=document.getElementById('bulkNames').value.trim();
+  if(!raw)return;
+  const names=raw.split('\n').map(s=>s.trim()).filter(Boolean);
+  let added=0;
+  names.forEach(name=>{
+    if(!S.players.find(p=>p.name===name)){
+      S.players.push({id:uid(),name,alive:true,originalRole:null,currentRole:null,team:'village',note:''});
+      added++;
+    }
+  });
+  document.getElementById('bulkNames').value='';
+  if(added)addLog(`➕ Thêm ${added} người chơi hàng loạt`);
+  toast(`✓ Đã thêm ${added} người`);
+  save();renderAll();
+}
+function addOrUpdatePlayer(){
+  const name=document.getElementById('playerNameInput').value.trim();
+  const note=document.getElementById('playerNoteInput').value.trim();
+  if(!name){toast('⚠️ Nhập tên người chơi!');return;}
+  if(editingPId){
+    const p=S.players.find(x=>x.id===editingPId);
+    if(p){p.name=name;p.note=note;addLog(`✏️ Sửa: ${name}`);}
+    cancelEditPlayer();
+  } else {
+    if(S.players.find(p=>p.name===name)){toast('⚠️ Tên đã tồn tại!');return;}
+    S.players.push({id:uid(),name,alive:true,originalRole:null,currentRole:null,team:'village',note});
+    addLog(`➕ Thêm người chơi: ${name}`);
+  }
+  document.getElementById('playerNameInput').value='';
+  document.getElementById('playerNoteInput').value='';
+  save();renderAll();
+}
+function cancelEditPlayer(){
+  editingPId=null;
+  document.getElementById('cancelEditBtn').style.display='none';
+  document.getElementById('addPlayerTitle').textContent='Thêm người chơi';
+  document.getElementById('playerNameInput').value='';
+  document.getElementById('playerNoteInput').value='';
+}
+function deletePlayer(id){
+  if(!confirm('Xóa người chơi này?'))return;
+  const p=S.players.find(x=>x.id===id);
+  S.players=S.players.filter(x=>x.id!==id);
+  if(p)addLog(`🗑 Xóa: ${p.name}`);
+  save();renderAll();
+}
+function openEditPlayer(id){
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  document.getElementById('editPId').value=id;
+  document.getElementById('editPName').value=p.name;
+  document.getElementById('editPNote').value=p.note||'';
+  document.getElementById('editPRole').innerHTML=S.roles.map(r=>`<option value="${r.id}"${r.id===p.currentRole?' selected':''}>${r.emoji} ${r.name}</option>`).join('');
+  openModal('editPlayerModal');
+}
+function saveEditPlayer(){
+  const id=document.getElementById('editPId').value;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  p.name=document.getElementById('editPName').value.trim();
+  p.note=document.getElementById('editPNote').value.trim();
+  const nr=document.getElementById('editPRole').value;
+  p.currentRole=nr;p.team=getRole(nr).team;
+  addLog(`✏️ Cập nhật ${p.name} → role: ${getRole(nr).name}`);
+  save();closeModal('editPlayerModal');renderAll();
+}
+
+// ════════════════════════════════════════
+// KILL / REVIVE
+// ════════════════════════════════════════
+function openKillModal(preselect){
+  document.getElementById('killSelect').innerHTML=alive().map(p=>`<option value="${p.id}"${p.id===preselect?' selected':''}>${p.name}</option>`).join('');
+  document.getElementById('killReason').value='';
+  openModal('killModal');
+}
+function confirmKill(){
+  const id=document.getElementById('killSelect').value;
+  const reason=document.getElementById('killReason').value.trim();
+  killPlayer(id,reason);
+  closeModal('killModal');
+}
+function killPlayer(id,reason,voteKill=false){
+  const p=S.players.find(x=>x.id===id);
+  if(!p||!p.alive)return;
+  p.alive=false;
+  addLog(`💀 ${p.name} đã chết${reason?' — '+reason:''}`);
+  // Chán Đời: chỉ thắng khi CHÍNH role Chán Đời bị làng bỏ phiếu xử tử
+  // (trước đây check theo team==='other' nên mọi role phe Khác như Kẻ Cướp/Kẻ Phơi Bày
+  //  hoặc role AI tự tạo phe "other" bị xử tử cũng nhầm thành "Chán Đời thắng")
+  let chanDoiWin=false;
+  if(voteKill&&p.currentRole==='chanDoi'){
+    chanDoiWin=true;
+    setTimeout(()=>triggerGameOver('other','⚡ Chán Đời Thắng!',
+      `${p.name} bị làng bỏ phiếu xử tử — Phe Khác chiến thắng!`,[p]),200);
+  }
+  // Cupid check — chết theo cặp đôi
+  let cupidPartner=null;
+  if(S.cupidPair&&S.cupidPair.includes(id)){
+    const partnerId=S.cupidPair.find(x=>x!==id);
+    const partner=S.players.find(x=>x.id===partnerId);
+    if(partner&&partner.alive){
+      addLog(`💔 ${partner.name} (cặp đôi Cupid) phải chết theo!`);
+      partner.alive=false;
+      addLog(`💀 ${partner.name} đã chết — chết theo cặp đôi Cupid`);
+      cupidPartner=partner;
+    }
+  }
+  // Hunter check — áp dụng cho cả nạn nhân chính VÀ người yêu Cupid chết theo (nếu là Thợ Săn)
+  // (trước đây chỉ check nạn nhân chính, nên Thợ Săn chết theo Cupid không được bắn trả)
+  [p,cupidPartner].filter(x=>x&&x.currentRole==='thoSan').forEach(h=>{
+    setTimeout(()=>{
+      if(confirm(`🏹 ${h.name} là Thợ Săn! Bắn ai trước khi chết?`)){openHunterModal(h.id);}
+    },200);
+  });
+  save();renderAll();
+  // Trước đây: chỉ gọi checkWin() khi !voteKill, nên khi làng bỏ phiếu xử tử trúng con sói cuối cùng
+  // (cách thắng phổ biến nhất), game KHÔNG BAO GIỜ tự nhận ra Phe Làng đã thắng.
+  // Giờ luôn kiểm tra, trừ khi Chán Đời vừa thắng (đã có triggerGameOver riêng ở trên).
+  if(!chanDoiWin)setTimeout(checkWin,150);
+}
+function reviveDirect(id){
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  p.alive=true;
+  addLog(`💚 ${p.name} được hồi sinh`);
+  save();renderAll();toast(`💚 ${p.name} hồi sinh`);
+}
+
+// ════════════════════════════════════════
+// SETUP
+// ════════════════════════════════════════
+function renderSetup(){
+  const el=document.getElementById('roleSetupList');
+  el.innerHTML=S.roles.map(r=>`
+    <div class="role-row">
+      <span style="font-size:16px">${r.emoji}</span>
+      <span style="flex:1;font-size:14px;font-weight:600">${r.name}</span>
+      <input type="number" min="0" value="${r._count||0}" oninput="updateRoleCount('${r.id}',this.value)">
+    </div>`).join('');
+  updateRoleTotals();
+}
+function updateRoleCount(id,v){const r=S.roles.find(x=>x.id===id);if(r)r._count=parseInt(v)||0;updateRoleTotals();}
+function updateRoleTotals(){
+  const total=S.roles.reduce((s,r)=>s+(r._count||0),0);
+  document.getElementById('totalRoleCount').textContent=total;
+  document.getElementById('totalPlayerCount').textContent=S.players.length;
+}
+function resetRoleCounts(){S.roles.forEach(r=>r._count=0);renderSetup();}
+function assignRoles(){
+  const total=S.roles.reduce((s,r)=>s+(r._count||0),0);
+  if(total!==S.players.length){toast(`⚠️ Tổng role (${total}) ≠ người chơi (${S.players.length})!`,3000);return;}
+  if(!S.players.length){toast('⚠️ Chưa có người chơi!');return;}
+  let pool=[];
+  S.roles.forEach(r=>{for(let i=0;i<(r._count||0);i++)pool.push(r.id)});
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  S.players.forEach((p,i)=>{p.originalRole=pool[i];p.currentRole=pool[i];p.team=getRole(pool[i]).team;});
+  addLog(`🎲 Chia role cho ${S.players.length} người chơi`);
+  save();
+  document.getElementById('assignCard').style.display='';
+  renderAssign();renderAll();
+  toast('✓ Đã chia role ngẫu nhiên!');
+}
+function renderAssign(){
+  const teams=[
+    {key:'wolf',label:'🐺 Phe Sói',cls:'assign-team-wolf'},
+    {key:'village',label:'🏘 Phe Làng',cls:'assign-team-village'},
+    {key:'other',label:'⚡ Phe Khác',cls:'assign-team-other'},
+  ];
+  let html='';
+  teams.forEach(t=>{
+    const members=S.players.filter(p=>getRole(p.currentRole).team===t.key);
+    if(!members.length)return;
+    html+=`<div class="assign-team-section">
+      <div class="assign-team-header ${t.cls}">${t.label} <span style="font-weight:400;opacity:.75">(${members.length} người)</span></div>
+      <div class="assign-grid">`;
+    members.forEach(p=>{
+      const r=getRole(p.currentRole);const col=avatarColor(p.name);
+      html+=`<div class="assign-card">
+        <div class="avatar" style="background:${col}22;color:${col}">${initials(p.name)}</div>
+        <div class="assign-card-info">
+          <div class="assign-card-name" title="${p.name}">${p.name}</div>
+          <div class="assign-card-role"><span class="role-badge ${teamClass(r.team)}" style="font-size:10px;padding:1px 6px">${r.emoji} ${r.name}</span></div>
+        </div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('assignList').innerHTML=html||'<div class="empty">Chưa phân role</div>';
+}
+
+function renderOverviewNames(){
+  const el=document.getElementById('overviewNameGrid');
+  const card=document.getElementById('overviewNameCard');
+  if(!S.players.length){card.style.display='none';return;}
+  card.style.display='';
+  const btn2=document.getElementById('rolesToggleBtn2');
+  if(btn2)btn2.textContent=S.rolesVisible?'🙈 Ẩn role':'👁 Role';
+  // Sort: alive first, then by team (wolf→village→other), then by name
+  const teamOrder={wolf:0,village:1,other:2};
+  const sorted=[...S.players].sort((a,b)=>{
+    if(a.alive!==b.alive)return a.alive?-1:1;
+    const ta=teamOrder[getRole(a.currentRole).team]??1;
+    const tb=teamOrder[getRole(b.currentRole).team]??1;
+    if(ta!==tb)return ta-tb;
+    return a.name.localeCompare(b.name,'vi');
+  });
+  el.innerHTML=sorted.map(p=>{
+    const r=getRole(p.currentRole);
+    const col=avatarColor(p.name);
+    const love=S.cupidPair&&S.cupidPair.includes(p.id)?'💕':'';
+    const prot=p.id===S.guardTarget;
+    const roleHTML=S.rolesVisible
+      ?`<span class="role-badge ${teamClass(r.team)}" style="font-size:10px;padding:1px 5px">${r.emoji} ${r.name}</span>`
+      :`<span class="role-badge t-hidden" style="font-size:10px;padding:1px 5px">Ẩn</span>`;
+    const actionBtn=p.alive
+      ?`<button class="btn btn-icon btn-sm btn-danger" style="padding:3px 6px;font-size:12px;border-radius:6px" onclick="openKillModal('${p.id}')" title="Đánh dấu chết">💀</button>`
+      :`<button class="btn btn-icon btn-sm btn-success" style="padding:3px 6px;font-size:12px;border-radius:6px;opacity:.7" onclick="reviveDirect('${p.id}')" title="Hồi sinh">💚</button>`;
+    return`<div class="overview-player-chip${p.alive?'':' dead-chip'}${prot?' prot-chip':''}">
+      <div class="avatar" style="background:${col}22;color:${col};width:28px;height:28px;font-size:10px">${initials(p.name)}</div>
+      <div class="overview-chip-info">
+        <div class="overview-chip-name">${p.name}${love}${prot?' 🛡':''} ${p.alive?'':'💀'}</div>
+        <div class="overview-chip-role">${roleHTML}</div>
+      </div>
+      ${actionBtn}
+    </div>`;
+  }).join('');
+}
+
+
+// ════════════════════════════════════════
+// SKILLS
+// ════════════════════════════════════════
+function renderSkills(){
+  const hasRoles=S.players.some(p=>p.currentRole);
+  document.getElementById('noSkillsMsg').style.display=hasRoles?'none':'';
+  skWolfEat();skWolfCub();skWitch();skSeer();skGuard();skRobber();skRevealer();skCupid();skChanDoi();skHunter();
+  // Dynamic skill cards for custom roles with skill field
+  renderCustomSkills();
+}
+function skShow(id,show){const el=document.getElementById('sk-'+id);if(el)el.style.display=show?'':'none';}
+
+function skWolfEat(){
+  const wolves=alive().filter(p=>getRole(p.currentRole).team==='wolf');
+  const isNight=S.phase==='night';
+  skShow('wolfeat',wolves.length>0&&isNight);
+  if(!wolves.length||!isNight)return;
+  const done=!!S.wolfEatTarget;
+  document.getElementById('sk-wolfeat-done').style.display=done?'':'none';
+  const targets=alive().filter(p=>getRole(p.currentRole).team!=='wolf');
+  const wolfNames=wolves.map(p=>p.name).join(', ');
+  const chosen=done?S.players.find(x=>x.id===S.wolfEatTarget):null;
+  document.getElementById('sk-wolfeat-body').innerHTML=`
+    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">🐺 ${wolfNames} chọn nạn nhân đêm nay:</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="wolfEatSel" style="flex:1;min-width:130px">
+        ${targets.map(p=>`<option value="${p.id}"${done&&p.id===S.wolfEatTarget?' selected':''}>${p.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-danger btn-sm" onclick="confirmWolfEat()">🩸 Chọn</button>
+    </div>
+    ${done?`<div class="a-danger alert" style="margin-top:8px;padding:7px 10px;font-size:13px">🎯 Đã chọn: <strong>${chosen?.name||'?'}</strong> (áp dụng khi chuyển sang ban ngày)</div>`:''}`;
+}
+function confirmWolfEat(){
+  const id=document.getElementById('wolfEatSel')?.value;
+  if(!id)return;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  S.wolfEatTarget=id;
+  addLog(`🐺 Sói đã chọn: ${p.name}`);
+  save();skWolfEat();
+  toast(`🩸 Sói chọn ${p.name}`);
+}
+
+function skWolfCub(){
+  const cubs=S.players.filter(p=>p.currentRole==='soithieunien');
+  skShow('wolfcub',cubs.length>0);if(!cubs.length)return;
+  const key=`day-${S.day}`;
+  const done=S.wolfCubDone[key]||false;
+  document.getElementById('sk-wolfcub-body').innerHTML=cubs.map(p=>`
+    <div class="check-row">
+      <input type="checkbox" id="cub_${p.id}" ${done?'checked':''} onchange="toggleWolfCub('${p.id}',this.checked)">
+      <label class="check-label" for="cub_${p.id}">${p.name} – Đã nói "sói" hoặc "gâu" hôm nay</label>
+      <span style="font-size:11px;color:${p.alive?'var(--green)':'var(--red)'}">${p.alive?'✓ Sống':'✗ Chết'}</span>
+    </div>`).join('');
+}
+function toggleWolfCub(id,v){
+  const key=`day-${S.day}`;S.wolfCubDone[key]=v;
+  const p=S.players.find(x=>x.id===id);
+  addLog(`🐾 Sói Thiếu Niên ${p?.name}: ${v?'✓ Hoàn thành':'✗ Chưa hoàn thành'}`);
+  save();renderWolfCubWarn();
+}
+function renderWolfCubWarn(){
+  const el=document.getElementById('wolfCubWarn');
+  const key=`day-${S.day}`;
+  const cubs=S.players.filter(p=>p.currentRole==='soithieunien'&&p.alive);
+  el.style.display=(cubs.length&&S.phase==='day'&&S.day>0&&!S.wolfCubDone[key])?'':'none';
+}
+function killWolfCub(){
+  const cub=S.players.find(p=>p.currentRole==='soithieunien'&&p.alive);
+  if(!cub)return;
+  if(confirm(`Xác nhận ${cub.name} bị xử tử vì không hoàn thành nhiệm vụ Sói Thiếu Niên?`))
+    killPlayer(cub.id,'không hoàn thành nhiệm vụ Sói Thiếu Niên');
+}
+
+function skWitch(){
+  const witches=S.players.filter(p=>p.currentRole==='phuThuy'&&p.alive);
+  skShow('witch',witches.length>0);if(!witches.length)return;
+  document.getElementById('sk-witch-body').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-success btn-sm" onclick="openWitch('save')" ${S.witchSave?'':'disabled style="opacity:.4"'}>
+        💊 Bình cứu${S.witchSave?'':' (đã dùng)'}
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="openWitch('poison')" ${S.witchPoison?'':'disabled style="opacity:.4"'}>
+        ☠️ Bình độc${S.witchPoison?'':' (đã dùng)'}
+      </button>
+    </div>`;
+}
+function openWitch(action){
+  witchAction=action;
+  document.getElementById('witchTitle').textContent=action==='save'?'💊 Cứu người':'☠️ Đầu độc';
+  let list;
+  if(action==='save'){
+    // Phù Thủy chỉ cứu được người vừa bị sói chọn đêm đó (chưa áp dụng chết)
+    if(!S.wolfEatTarget){toast('🐺 Sói chưa chọn nạn nhân đêm nay — không có ai để cứu!');return;}
+    const victim=S.players.find(p=>p.id===S.wolfEatTarget);
+    if(!victim||!victim.alive){toast('Nạn nhân đêm nay không hợp lệ hoặc đã chết rồi!');return;}
+    list=[victim];
+  } else {
+    list=alive();
+    if(!list.length){toast('Không có người sống!');return;}
+  }
+  document.getElementById('witchTarget').innerHTML=list.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  openModal('witchModal');
+}
+function confirmWitch(){
+  const id=document.getElementById('witchTarget').value;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  if(witchAction==='save'){
+    // Hủy lựa chọn của sói và tiêu bình cứu
+    S.wolfEatTarget=null;
+    S.witchSave=false;
+    addLog(`💊 Phù Thủy cứu: ${p.name} (sói không ăn được đêm nay)`);
+    save();closeModal('witchModal');renderAll();
+    toast(`💊 Đã cứu ${p.name}!`);
+  } else {
+    // Trước đây set p.alive=false trực tiếp, bỏ qua killPlayer() nên KHÔNG kiểm tra
+    // điều kiện thắng, KHÔNG kích hoạt Thợ Săn bắn trả, KHÔNG xử lý cặp đôi Cupid chết theo.
+    S.witchPoison=false;
+    closeModal('witchModal');
+    killPlayer(id,'bị Phù Thủy đầu độc');
+    toast(`☠️ Đã đầu độc ${p.name}!`);
+  }
+}
+
+function skSeer(){
+  const seers=S.players.filter(p=>p.currentRole==='tienTri'&&p.alive);
+  skShow('seer',seers.length>0);if(!seers.length)return;
+  const targets=alive().filter(p=>p.currentRole!=='tienTri');
+  document.getElementById('sk-seer-body').innerHTML=`
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="seerSel" style="flex:1;min-width:130px">${targets.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+      <button class="btn btn-primary btn-sm" onclick="doSeer()">🔮 Soi</button>
+    </div>`;
+}
+function doSeer(){
+  const id=document.getElementById('seerSel')?.value;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  const r=getRole(p.currentRole);
+  addLog(`🔮 Tiên Tri soi ${p.name} → ${r.name} (${r.team==='wolf'?'Sói':'Làng'})`);
+  document.getElementById('seerResult').innerHTML=`
+    <div style="font-size:44px;margin-bottom:8px">${r.emoji}</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:8px">${p.name}</div>
+    <span class="role-badge ${teamClass(r.team)}" style="font-size:14px;padding:5px 14px">${r.name}</span>
+    <div style="margin-top:10px;font-size:13px;color:var(--text2)">Phe: ${r.team==='wolf'?'🐺 Sói':r.team==='village'?'🏘 Làng':'⚡ Khác'}</div>`;
+  save();openModal('seerModal');
+}
+
+function skGuard(){
+  const guards=S.players.filter(p=>p.currentRole==='baoVe'&&p.alive);
+  skShow('guard',guards.length>0);if(!guards.length)return;
+  const protName=S.guardTarget?S.players.find(x=>x.id===S.guardTarget)?.name:'Chưa chọn';
+  document.getElementById('sk-guard-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="openGuardModal()">🛡 Bảo vệ đêm nay</button>
+      ${S.guardTarget?`<span style="font-size:13px;color:var(--green)">✓ Đang bảo vệ: <strong>${protName}</strong></span>`:''}
+    </div>`;
+}
+function openGuardModal(){
+  document.getElementById('guardTarget').innerHTML=alive().map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  openModal('guardModal');
+}
+function confirmGuard(){
+  const id=document.getElementById('guardTarget').value;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  S.guardTarget=id;addLog(`🛡 Bảo Vệ chọn: ${p.name}`);
+  save();closeModal('guardModal');skGuard();renderAlivePlayers();
+}
+
+function skRobber(){
+  const robbers=S.players.filter(p=>p.currentRole==='keCuop'&&p.alive);
+  skShow('robber',robbers.length>0);if(!robbers.length)return;
+  document.getElementById('sk-robber-body').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openRobberModal()">🗡 Đổi role</button>`;
+}
+function openRobberModal(){
+  document.getElementById('robberSelf').innerHTML=S.players.filter(p=>p.currentRole==='keCuop'&&p.alive).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('robberTarget').innerHTML=alive().filter(p=>p.currentRole!=='keCuop').map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  openModal('robberModal');
+}
+
+// 🔍 ROBBER WIN CONDITION UPDATE
+// Sau khi Kẻ Cướp đổi role:
+// - Người cầm Kẻ Cướp MẤT vai Kẻ Cướp và trở thành vai mới
+// - Điều kiện thắng PHỤ THUỘC HOÀN TOÀN vào vai mới
+//   * Nếu vai mới thuộc team 'wolf' → thắng theo phe Ma Sói
+//   * Nếu vai mới thuộc team 'village' → thắng theo phe Dân
+// Lưu ý: Không tồn tại điều kiện thắng riêng cho Kẻ Cướp.
+
+function confirmRobber(){
+  const r1=document.getElementById('robberSelf').value;
+  const r2=document.getElementById('robberTarget').value;
+  const p1=S.players.find(x=>x.id===r1);const p2=S.players.find(x=>x.id===r2);
+  if(!p1||!p2)return;
+  const tmp=p1.currentRole;p1.currentRole=p2.currentRole;p2.currentRole=tmp;
+  p1.team=getRole(p1.currentRole).team;p2.team=getRole(p2.currentRole).team;
+  addLog(`🗡 Kẻ Cướp ${p1.name} đổi role với ${p2.name} → ${p1.name}:${getRole(p1.currentRole).name}, ${p2.name}:${getRole(p2.currentRole).name}`);
+  save();closeModal('robberModal');renderAll();toast('✓ Đã đổi role!');
+}
+
+function skRevealer(){
+  const revs=S.players.filter(p=>p.currentRole==='kePhoBay'&&p.alive);
+  skShow('revealer',revs.length>0);if(!revs.length)return;
+  document.getElementById('sk-revealer-used').style.display=S.revealerUsed?'':'none';
+  if(S.revealerUsed){document.getElementById('sk-revealer-body').innerHTML='<p style="font-size:13px;color:var(--text3)">Đã sử dụng kỹ năng.</p>';return;}
+  const targets=alive().filter(p=>p.currentRole!=='kePhoBay');
+  document.getElementById('sk-revealer-body').innerHTML=`
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="revSel" style="flex:1;min-width:130px">${targets.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+      <button class="btn btn-primary btn-sm" onclick="doRevealer()">👁 Phơi bày</button>
+    </div>`;
+}
+function doRevealer(){
+  const id=document.getElementById('revSel')?.value;
+  const p=S.players.find(x=>x.id===id);if(!p)return;
+  const r=getRole(p.currentRole);S.revealerUsed=true;
+  addLog(`👁 Kẻ Phơi Bày tiết lộ ${p.name} → ${r.name}`);
+  document.getElementById('revealerResult').innerHTML=`
+    <div style="font-size:44px;margin-bottom:8px">${r.emoji}</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:8px">${p.name}</div>
+    <span class="role-badge ${teamClass(r.team)}" style="font-size:14px;padding:5px 14px">${r.name}</span>`;
+  save();skRevealer();openModal('revealerModal');
+}
+
+function skCupid(){
+  const cupids=S.players.filter(p=>p.currentRole==='cupid'&&p.alive);
+  skShow('cupid',cupids.length>0);if(!cupids.length)return;
+  document.getElementById('sk-cupid-used').style.display=S.cupidUsed?'':'none';
+  if(S.cupidUsed&&S.cupidPair){
+    const [a,b]=S.cupidPair.map(id=>S.players.find(x=>x.id===id));
+    document.getElementById('sk-cupid-body').innerHTML=`<p style="font-size:14px">💕 Cặp đôi: <strong>${a?.name||'?'}</strong> ❤️ <strong>${b?.name||'?'}</strong></p>`;
+    return;
+  }
+  const isN1=S.phase==='night'&&S.day===1;
+  document.getElementById('sk-cupid-body').innerHTML=isN1
+    ?`<button class="btn btn-sm" style="background:var(--pink);color:#fff;border-color:var(--pink)" onclick="openCupidModal()">💘 Chọn cặp đôi</button>`
+    :`<p style="font-size:13px;color:var(--text3)">Chỉ hoạt động Đêm 1.</p>`;
+}
+function openCupidModal(){
+  const opts=alive().map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('cupidP1').innerHTML=opts;
+  document.getElementById('cupidP2').innerHTML=opts;
+  openModal('cupidModal');
+}
+function confirmCupid(){
+  const id1=document.getElementById('cupidP1').value;
+  const id2=document.getElementById('cupidP2').value;
+  if(id1===id2){toast('⚠️ Chọn 2 người khác nhau!');return;}
+  const p1=S.players.find(x=>x.id===id1);const p2=S.players.find(x=>x.id===id2);
+  S.cupidPair=[id1,id2];S.cupidUsed=true;
+  addLog(`💘 Cupid ghép đôi: ${p1.name} ❤️ ${p2.name}`);
+  save();closeModal('cupidModal');renderAll();
+}
+function renderCupidDeathWarn(){
+  const el=document.getElementById('cupidDeathWarn');
+  if(!S.cupidPair){el.style.display='none';return;}
+  const [a,b]=S.cupidPair.map(id=>S.players.find(x=>x.id===id));
+  if(!a||!b){el.style.display='none';return;}
+  if(!a.alive&&b.alive){el.style.display='';el.textContent=`💔 ${a.name} đã chết! ${b.name} phải chết theo (Cupid)!`;}
+  else if(!b.alive&&a.alive){el.style.display='';el.textContent=`💔 ${b.name} đã chết! ${a.name} phải chết theo (Cupid)!`;}
+  else el.style.display='none';
+}
+
+function skChanDoi(){
+  const chanDois=S.players.filter(p=>p.currentRole==='chanDoi'&&p.alive);
+  skShow('chandoi',chanDois.length>0);if(!chanDois.length)return;
+  document.getElementById('sk-chandoi-body').innerHTML=`
+    <p style="font-size:12px;color:var(--text2);margin-bottom:4px">Người chơi: <strong>${chanDois.map(p=>p.name).join(', ')}</strong></p>
+    <p style="font-size:12px;color:var(--text3)">😞 Thắng khi bị làng bỏ phiếu xử tử. Khi xử tử qua bỏ phiếu, hệ thống tự động kích hoạt chiến thắng.</p>`;
+}
+
+function skHunter(){
+  const hunters=S.players.filter(p=>p.currentRole==='thoSan');
+  skShow('hunter',hunters.length>0);if(!hunters.length)return;
+  const deadH=hunters.filter(p=>!p.alive);
+  document.getElementById('sk-hunter-body').innerHTML=deadH.length
+    ?`<button class="btn btn-danger btn-sm" onclick="openHunterModal()">🏹 Bắn mục tiêu</button>`
+    :`<p style="font-size:13px;color:var(--text3)">Kích hoạt khi Thợ Săn chết.</p>`;
+}
+function openHunterModal(preselect){
+  const dH=dead().filter(p=>p.currentRole==='thoSan');
+  if(!dH.length){toast('Không có Thợ Săn đã chết!');return;}
+  document.getElementById('hunterSelf').innerHTML=dH.map(p=>`<option value="${p.id}"${p.id===preselect?' selected':''}>${p.name}</option>`).join('');
+  document.getElementById('hunterTarget').innerHTML=alive().map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  openModal('hunterModal');
+}
+function confirmHunter(){
+  const hId=document.getElementById('hunterSelf').value;
+  const tId=document.getElementById('hunterTarget').value;
+  const h=S.players.find(x=>x.id===hId);const t=S.players.find(x=>x.id===tId);
+  if(!h||!t)return;
+  addLog(`🏹 Thợ Săn ${h.name} bắn ${t.name}`);
+  killPlayer(tId,`bị Thợ Săn ${h.name} bắn`);
+  closeModal('hunterModal');
+}
+
+// ════════════════════════════════════════
+// LOG
+// ════════════════════════════════════════
+function renderLog(){
+  const phases=['all',...new Set(S.log.map(l=>l.label))];
+  document.getElementById('logFtabs').innerHTML=phases.map(f=>`
+    <div class="ftab${logFilter===f?' active':''}" onclick="filterLog('${f}',this)">${f==='all'?'Tất cả':f}</div>`).join('');
+  const list=logFilter==='all'?S.log:S.log.filter(l=>l.label===logFilter);
+  const el=document.getElementById('logList');
+  if(!list.length){el.innerHTML='<div class="empty">Chưa có nhật ký</div>';return;}
+  el.innerHTML=list.map(l=>`
+    <div class="log-entry">
+      <span class="log-tag ${l.phase==='night'?'pill-night phase-pill':'pill-day phase-pill'}">${l.label}</span>
+      <div class="log-text">${l.text}</div>
+      <span class="log-time">${l.ts}</span>
+      <button class="btn btn-icon btn-sm" onclick="openEditLog('${l.id}')" style="font-size:12px">✏️</button>
+      <button class="btn btn-icon btn-sm" onclick="deleteLog('${l.id}')" style="font-size:12px">🗑</button>
+    </div>`).join('');
+}
+function filterLog(f,el){
+  logFilter=f;
+  document.querySelectorAll('#logFtabs .ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderLog();
+}
+function clearLog(){if(!confirm('Xóa toàn bộ nhật ký?'))return;S.log=[];save();renderLog();}
+function openEditLog(id){
+  const l=S.log.find(x=>x.id===id);if(!l)return;
+  document.getElementById('editLogId').value=id;
+  document.getElementById('editLogText').value=l.text;
+  openModal('editLogModal');
+}
+function saveEditLog(){
+  const id=document.getElementById('editLogId').value;
+  const l=S.log.find(x=>x.id===id);
+  if(l)l.text=document.getElementById('editLogText').value.trim();
+  save();closeModal('editLogModal');renderLog();
+}
+function deleteLog(id){S.log=S.log.filter(x=>x.id!==id);save();renderLog();}
+
+// ════════════════════════════════════════
+// ROLES
+// ════════════════════════════════════════
+function renderRoles(){
+  document.getElementById('rolesList').innerHTML=S.roles.map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+      <span style="font-size:20px;margin-top:2px">${r.emoji}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px">${r.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">${r.team==='wolf'?'🐺 Sói':r.team==='village'?'🏘 Làng':'⚡ Khác'}</div>
+        ${r.skill?`<div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4;padding:4px 7px;background:var(--bg3);border-radius:6px">${r.skill}</div>`:''}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="btn btn-icon btn-sm" onclick="openEditRoleModal('${r.id}')">✏️</button>
+        <button class="btn btn-icon btn-sm btn-danger" onclick="deleteRole('${r.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+function showAddRoleModal(){
+  document.getElementById('editRoleId').value='';
+  document.getElementById('newRoleName').value='';
+  document.getElementById('newRoleTeam').value='village';
+  document.getElementById('newRoleEmoji').value='';
+  document.getElementById('newRoleSkill').value='';
+  document.getElementById('newRoleEffect').value='';
+  document.getElementById('newRolePower').value='';
+  document.getElementById('aiSuggestStatus').style.display='none';
+  document.getElementById('aiSkillPreview').style.display='none';
+  openModal('addRoleModal');
+}
+function openEditRoleModal(id){
+  const r=S.roles.find(x=>x.id===id);if(!r)return;
+  document.getElementById('editRoleId').value=id;
+  document.getElementById('newRoleName').value=r.name;
+  document.getElementById('newRoleTeam').value=r.team;
+  document.getElementById('newRoleEmoji').value=r.emoji;
+  document.getElementById('newRoleSkill').value=r.skill||'';
+  document.getElementById('newRoleEffect').value=r.effect?JSON.stringify(r.effect):'';
+  document.getElementById('newRolePower').value=r.power||'';
+  document.getElementById('aiSuggestStatus').style.display='none';
+  document.getElementById('aiSkillPreview').style.display='none';
+  openModal('addRoleModal');
+}
+function saveRole(){
+  const id=document.getElementById('editRoleId').value;
+  const name=document.getElementById('newRoleName').value.trim();
+  const team=document.getElementById('newRoleTeam').value;
+  const emoji=document.getElementById('newRoleEmoji').value.trim()||'❓';
+  const skill=document.getElementById('newRoleSkill').value.trim();
+  const effectRaw=document.getElementById('newRoleEffect').value;
+  const power=parseFloat(document.getElementById('newRolePower').value)||1;
+  let effect=null;
+  try{if(effectRaw)effect=JSON.parse(effectRaw);}catch(e){}
+  if(!name){toast('Nhập tên role!');return;}
+  if(id){const r=S.roles.find(x=>x.id===id);if(r){r.name=name;r.team=team;r.emoji=emoji;r.skill=skill;r.effect=effect;r.power=power;}}
+  else S.roles.push({id:'r'+Date.now(),name,team,emoji,skill,effect,power});
+  save();closeModal('addRoleModal');renderRoles();renderSetup();
+}
+function deleteRole(id){
+  if(S.players.some(p=>p.currentRole===id||p.originalRole===id)&&!confirm('Role đang được dùng. Vẫn xóa?'))return;
+  S.roles=S.roles.filter(x=>x.id!==id);save();renderRoles();renderSetup();
+}
+
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+function exportJSON(){
+  const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download=`masoi_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();toast('✓ Đã xuất file JSON');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{Object.assign(S,JSON.parse(ev.target.result));save();renderAll();toast('✓ Nhập dữ liệu thành công!');}
+    catch{toast('⚠️ File không hợp lệ!');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+function confirmReset(){
+  openConfirm('⚠️ Reset Game','Toàn bộ dữ liệu sẽ bị xóa! Hành động không thể hoàn tác.',()=>{
+    LS.removeItem('masoi2');
+    Object.assign(S,{players:[],roles:JSON.parse(JSON.stringify(DEFAULT_ROLES)),day:0,phase:'day',
+      rolesVisible:false,log:[],witchSave:true,witchPoison:true,revealerUsed:false,
+      cupidUsed:false,cupidPair:null,wolfCubDone:{},guardTarget:null,wolfEatTarget:null,votes:{},
+      timerSecs:300,timerPreset:300,nextId:1,nextLogId:1,gameOver:false});
+    stopTimer();save();renderAll();toast('✓ Đã reset game!');
+  });
+}
+
+// ════════════════════════════════════════
+// CUSTOM ROLE SKILLS
+// ════════════════════════════════════════
+// Custom roles (non-builtin) with wolf team get a generic "vote to eat" note shown in wolf eat
+// For now we show a dynamic section for any custom roles in play
+function renderCustomSkills(){
+  // Remove old custom skill cards
+  document.querySelectorAll('.custom-skill-card').forEach(el=>el.remove());
+  const builtinIds=['masoi','soithieunien','tienTri','phuThuy','baoVe','thoSan','keCuop','kePhoBay','chanDoi','cupid','danLang'];
+  const customInPlay=S.players
+    .filter(p=>p.alive&&p.currentRole&&!builtinIds.includes(p.currentRole))
+    .map(p=>({player:p,role:getRole(p.currentRole)}));
+  if(!customInPlay.length)return;
+  const container=document.getElementById('tab-skills');
+  // Group by role
+  const byRole={};
+  customInPlay.forEach(({player,role})=>{
+    if(!byRole[role.id])byRole[role.id]={role,players:[]};
+    byRole[role.id].players.push(player);
+  });
+  Object.values(byRole).forEach(({role,players})=>{
+    const card=document.createElement('div');
+    card.className='card custom-skill-card';
+    const teamLabel=role.team==='wolf'?'🐺 Phe Sói':role.team==='village'?'🏘 Phe Làng':'⚡ Phe Khác';
+    card.innerHTML=`<div class="skill-hdr">
+      <div class="skill-name">${role.emoji} ${role.name}</div>
+      <span class="role-badge ${teamClass(role.team)}" style="font-size:11px">${teamLabel}</span>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:6px">Người chơi: ${players.map(p=>p.name).join(', ')}</p>
+    ${role.skill
+      ? `<p style="font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--bg3);border-radius:8px">⚙️ ${role.skill}</p>`
+      : `<p style="font-size:12px;color:var(--text3);font-style:italic">Chưa có mô tả kỹ năng — sửa role để thêm.</p>`
+    }`;
+    container.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════
+// WIN CONDITIONS
+// ════════════════════════════════════════
+function checkWin(){
+  if(!S.players.some(p=>p.currentRole))return; // no roles assigned yet
+  if(S.gameOver)return;
+
+  const aliveList=alive();
+  const aliveWolves=aliveList.filter(p=>getRole(p.currentRole).team==='wolf');
+  const aliveVillage=aliveList.filter(p=>getRole(p.currentRole).team==='village');
+  const aliveOther=aliveList.filter(p=>getRole(p.currentRole).team==='other');
+  const aliveNonWolf=aliveList.filter(p=>getRole(p.currentRole).team!=='wolf');
+
+  // Wolf wins: wolves >= non-wolves (and at least 1 wolf alive)
+  if(aliveWolves.length>0 && aliveWolves.length>=aliveNonWolf.length){
+    triggerGameOver('wolf','🐺 Phe Sói Thắng!',
+      `Số sói (${aliveWolves.length}) ≥ số người còn lại (${aliveNonWolf.length}). Làng không thể cản!`,
+      aliveWolves);
+    return;
+  }
+  // Village wins: all wolves dead
+  if(aliveWolves.length===0&&aliveList.length>0){
+    triggerGameOver('village','🏘 Phe Làng Thắng!',
+      'Toàn bộ Sói đã bị loại khỏi trò chơi!',
+      aliveVillage);
+    return;
+  }
+}
+
+
+
+function triggerGameOver(team,title,desc,winners){
+  S.gameOver=true;
+  save();
+  addLog(`🏆 ${title}`);
+  const emojis={wolf:'🐺',village:'🏆',other:'⚡'};
+  const emoji=emojis[team]||'🏆';
+  document.getElementById('goEmoji').textContent=emoji;
+  document.getElementById('goTitle').textContent=title;
+  document.getElementById('goDesc').textContent=desc;
+  // Update banner
+  const gob=document.getElementById('gameOverBanner');
+  if(gob){gob.style.display='';document.getElementById('gobEmoji').textContent=emoji;document.getElementById('gobTitle').textContent=title;}
+  document.getElementById('goWinners').innerHTML=winners.length
+    ?`<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Người thắng:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
+        ${winners.map(p=>{const col=avatarColor(p.name);return`<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:var(--bg3);font-size:13px;font-weight:600">
+          <div style="width:24px;height:24px;border-radius:50%;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">${initials(p.name)}</div>${p.name}</div>`;}).join('')}
+      </div>`:'';
+  openModal('gameOverModal');
+}
+
+function newGame(){
+  closeModal('gameOverModal');
+  // Keep players and roles, just reassign roles
+  S.players.forEach(p=>{p.alive=true;p.originalRole=null;p.currentRole=null;p.team='village';});
+  S.day=0;S.phase='day';S.log=[];S.votes={};S.witchSave=true;S.witchPoison=true;
+  S.revealerUsed=false;S.cupidUsed=false;S.cupidPair=null;S.wolfCubDone={};
+  S.guardTarget=null;S.wolfEatTarget=null;S.gameOver=false;S.rolesVisible=false;
+  stopTimer();S.timerSecs=S.timerPreset;
+  save();renderAll();
+  showTab('setup');
+  toast('🎲 Sẵn sàng ván mới! Hãy chia role.');
+}
+
+// ════════════════════════════════════════
+// AUTO BALANCE
+// ════════════════════════════════════════
+let _balanceSuggestion=null;
+function autoBalance(){
+  const n=S.players.length;
+  if(n<4){toast('⚠️ Cần ít nhất 4 người chơi!');return;}
+
+  // Power weights (lower = weaker/passive)
+  const POWER={wolf:3,soithieunien:2,tienTri:2,phuThuy:2.5,baoVe:1.5,thoSan:1.5,keCuop:1,kePhoBay:1,cupid:1.5,danLang:1};
+
+  // Balance formula based on player count
+  // Wolves: ~1 per 4-5 players, min 1
+  // Other: 0-2 depending on n
+  // Village: rest
+  const wolves=Math.max(1,Math.round(n/4.5));
+  const hasOther=n>=8;
+  const otherCount=n>=15?2:n>=8?1:0;
+  const villageSpecial=Math.min(Math.ceil(n/5),4); // tiên tri, phù thủy, bảo vệ, thợ săn
+  const villagers=n-wolves-(hasOther?otherCount:0)-villageSpecial;
+
+  // Build role counts
+  const counts={};
+  S.roles.forEach(r=>counts[r.id]=0);
+
+  // Assign wolves
+  const wolfRoles=S.roles.filter(r=>r.team==='wolf');
+  if(wolfRoles.length){
+    // Distribute wolves: prefer masoi, then soithieunien
+    let rem=wolves;
+    const mainWolf=wolfRoles.find(r=>r.id==='masoi')||wolfRoles[0];
+    wolfRoles.forEach(r=>{if(r.id!==mainWolf.id)counts[r.id]=0;});
+    if(wolfRoles.length>1&&wolves>1){
+      const sub=wolfRoles.find(r=>r.id!==mainWolf.id);
+      if(sub){counts[sub.id]=1;rem--;}
+    }
+    counts[mainWolf.id]=rem;
+  }
+
+  // Assign other team
+  if(hasOther&&otherCount>0){
+    const otherRoles=S.roles.filter(r=>r.team==='other');
+    otherRoles.slice(0,otherCount).forEach(r=>counts[r.id]=1);
+  }
+
+  // Assign village specials
+  const vSpecials=['tienTri','phuThuy','baoVe','thoSan','cupid'];
+  let vsAssigned=0;
+  for(const id of vSpecials){
+    if(vsAssigned>=villageSpecial)break;
+    const r=S.roles.find(x=>x.id===id&&x.team==='village');
+    if(r){counts[r.id]=1;vsAssigned++;}
+  }
+
+  // Fill rest with danLang
+  const dl=S.roles.find(r=>r.id==='danLang');
+  if(dl)counts[dl.id]=Math.max(0,villagers);
+
+  // Recalc to ensure total = n
+  let total=Object.values(counts).reduce((a,b)=>a+b,0);
+  const diff=n-total;
+  if(diff!==0&&dl)counts[dl.id]=Math.max(0,(counts[dl.id]||0)+diff);
+
+  _balanceSuggestion=counts;
+
+  // Power score
+  const wolfPow=S.roles.filter(r=>r.team==='wolf').reduce((s,r)=>s+(POWER[r.id]||1)*(counts[r.id]||0),0);
+  const vilPow=S.roles.filter(r=>r.team==='village').reduce((s,r)=>s+(POWER[r.id]||1)*(counts[r.id]||0),0);
+  const othPow=S.roles.filter(r=>r.team==='other').reduce((s,r)=>s+(POWER[r.id]||1)*(counts[r.id]||0),0);
+
+  // Render suggestion
+  const card=document.getElementById('balanceCard');
+  const res=document.getElementById('balanceResult');
+  const teams=[
+    {key:'wolf',label:'🐺 Phe Sói',cls:'assign-team-wolf',pow:wolfPow},
+    {key:'village',label:'🏘 Phe Làng',cls:'assign-team-village',pow:vilPow},
+    {key:'other',label:'⚡ Phe Khác',cls:'assign-team-other',pow:othPow},
+  ];
+  let html='';
+  teams.forEach(t=>{
+    const items=S.roles.filter(r=>r.team===t.key&&(counts[r.id]||0)>0);
+    if(!items.length)return;
+    html+=`<div style="margin-bottom:10px">
+      <div class="assign-team-header ${t.cls}" style="margin-bottom:6px">${t.label} · Sức mạnh: <strong>${t.pow.toFixed(1)}</strong></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">`;
+    items.forEach(r=>{
+      html+=`<div style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:7px;background:var(--bg3);font-size:12px;font-weight:600">
+        ${r.emoji} ${r.name} <span style="background:var(--accent-bg);color:var(--accent-text);border-radius:99px;padding:1px 6px;font-size:11px">×${counts[r.id]}</span>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  // Balance gauge
+  const total2=wolfPow+vilPow+othPow||1;
+  const wPct=Math.round(wolfPow/total2*100);
+  const vPct=Math.round(vilPow/total2*100);
+  const oPct=100-wPct-vPct;
+  html+=`<div style="margin-top:8px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">Tỉ lệ sức mạnh</div>
+    <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px">
+      <div style="width:${wPct}%;background:var(--accent);border-radius:4px 0 0 4px"></div>
+      <div style="width:${vPct}%;background:var(--green)"></div>
+      <div style="width:${oPct}%;background:var(--amber);border-radius:0 4px 4px 0"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px;font-size:10px;color:var(--text3)">
+      <span>🐺 ${wPct}%</span><span>🏘 ${vPct}%</span><span>⚡ ${oPct}%</span>
+    </div>
+  </div>`;
+  res.innerHTML=html;
+  card.style.display='';
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function applyBalance(){
+  if(!_balanceSuggestion)return;
+  S.roles.forEach(r=>{r._count=_balanceSuggestion[r.id]||0;});
+  save();renderSetup();
+  document.getElementById('balanceCard').style.display='none';
+  toast('✓ Đã áp dụng gợi ý cân bằng!');
+}
+
+// ════════════════════════════════════════
+// MODAL UTILS
+// ════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function openConfirm(title,msg,onOk){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmOkBtn').onclick=()=>{onOk();closeModal('confirmModal');};
+  openModal('confirmModal');
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden');});
+});
+
+// ════════════════════════════════════════
+// API KEY
+// ════════════════════════════════════════
+function getApiKey(){ return LS.getItem('masoi_apikey')||''; }
+function saveApiKey(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){toast('⚠️ Nhập API key!');return;}
+  LS.setItem('masoi_apikey',key);
+  document.getElementById('apiKeyStatus').textContent='✓ Đã lưu API key';
+  document.getElementById('apiKeyStatus').style.color='var(--green)';
+  toast('✓ Đã lưu API key!');
+}
+function loadApiKeyUI(){
+  const key=getApiKey();
+  if(key){
+    document.getElementById('apiKeyInput').value=key;
+    document.getElementById('apiKeyStatus').textContent='✓ API key đã được lưu';
+    document.getElementById('apiKeyStatus').style.color='var(--green)';
+  }
+}
+function apiFetch(body){
+  const key='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';
+  return fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({
+      model:'llama-3.3-70b-versatile',
+      max_tokens:body.max_tokens||1000,
+      messages:[
+        {role:'system',content:body.system||''},
+        {role:'user',content:body.messages[0].content}
+      ]
+    })
+  });
+}
+function geminiText(data){
+  return data?.choices?.[0]?.message?.content||'';
+}
+let _aiRolePending = null;
+
+// AI gợi ý từ tên role trong modal Thêm/Sửa
+async function aiSuggestFromName() {
+  const name = document.getElementById('newRoleName').value.trim();
+  if (!name) { toast('⚠️ Nhập tên role trước!'); return; }
+
+  const btn = document.getElementById('aiSuggestBtn');
+  const statusEl = document.getElementById('aiSuggestStatus');
+  const previewEl = document.getElementById('aiSkillPreview');
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  statusEl.style.display = '';
+  statusEl.textContent = '⏳ AI đang phân tích role "' + name + '"...';
+  previewEl.style.display = 'none';
+
+  const existingRoles = S.roles.map(r => `${r.emoji} ${r.name} (${r.team})`).join(', ');
+
+  const systemPrompt = `Bạn là trợ lý thiết kế role cho trò chơi Ma Sói (Werewolf).
+Người dùng cung cấp tên role. Hãy phân tích và trả về JSON thuần (không markdown, không giải thích):
+{
+  "team": "wolf" | "village" | "other",
+  "emoji": "1 emoji duy nhất phù hợp nhất",
+  "skill": "Mô tả kỹ năng ngắn gọn 1-2 câu cho quản trò",
+  "power": <số thực 1.0-4.0 đánh giá sức mạnh role>,
+  "effect": {
+    "type": "protect"|"kill"|"reveal"|"swap"|"revive"|"check_wolf"|"passive"|"vote_win"|"none",
+    "timing": "night"|"day"|"anytime",
+    "target": "any"|"enemy"|"ally"|"self"|"none",
+    "once": true|false,
+    "label": "Tên nút hành động VD: Bảo vệ / Tiêu diệt / Soi bài"
+  }
+}
+
+Các effect type:
+- protect: bảo vệ mục tiêu khỏi bị giết đêm đó
+- kill: giết mục tiêu ngay lập tức
+- reveal: xem role thật của mục tiêu (chỉ quản trò thấy)
+- swap: đổi role của bản thân với mục tiêu
+- revive: hồi sinh người đã chết
+- check_wolf: biết mục tiêu có phải sói không (true/false)
+- vote_win: thắng khi bị làng bỏ phiếu xử tử (passive)
+- passive: không có hành động đêm, hiệu ứng tự động
+- none: không có kỹ năng đặc biệt
+
+power gợi ý: danLang=1, baoVe=1.5, thoSan=1.5, tienTri=2, phuThuy=2.5, masoi=3, soi mạnh=3.5-4
+
+Quy tắc phe:
+- "wolf": có lợi cho phe sói, biết danh tính sói, hoặc hành động ban đêm cùng sói
+- "other": thắng theo điều kiện độc lập
+- "village": mọi role còn lại
+
+Role hiện có: ${existingRoles}`;
+
+  try {
+    const resp = await apiFetch({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Tên role: "${name}"` }]
+    });
+    const data = await resp.json();
+    if(!resp.ok || data.error) throw new Error(data.error?.message || `HTTP ${resp.status}`);
+    const text = geminiText(data);
+    if(!text) throw new Error('AI không trả về nội dung');
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    if (!parsed.team || !parsed.emoji) throw new Error('Thiếu dữ liệu');
+
+    // Auto-fill fields
+    document.getElementById('newRoleTeam').value = parsed.team;
+    document.getElementById('newRoleEmoji').value = parsed.emoji;
+    if (parsed.skill) document.getElementById('newRoleSkill').value = parsed.skill;
+    // Store effect + power in hidden fields
+    document.getElementById('newRoleEffect').value = JSON.stringify(parsed.effect||{type:'none'});
+    document.getElementById('newRolePower').value = parsed.power||1;
+
+    // Show skill preview
+    const effectLabel = parsed.effect?.label || parsed.effect?.type || '';
+    document.getElementById('aiSkillText').textContent = (parsed.skill||'(không có)') + (effectLabel ? ` [⚙️ ${effectLabel}]` : '');
+    previewEl.style.display = '';
+    statusEl.style.display = 'none';
+    toast('✨ AI đã điền phe, emoji và kỹ năng!');
+  } catch (e) {
+    const msg = e.message || 'Thử lại';
+    statusEl.textContent = '⚠️ ' + msg;
+    statusEl.style.display = '';
+    if(msg.includes('API key')) { toast('⚠️ ' + msg, 3500); showTab('data'); }
+    else toast('⚠️ AI gặp lỗi!');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ AI';
+  }
+}
+
+async function aiGenerateRole() {
+  const input = document.getElementById('aiRoleInput').value.trim();
+  if (!input) { toast('⚠️ Nhập mô tả role trước!'); return; }
+
+  const btn = document.getElementById('aiRoleBtn');
+  const status = document.getElementById('aiRoleStatus');
+  const preview = document.getElementById('aiRolePreview');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang tạo...';
+  status.textContent = '';
+  preview.style.display = 'none';
+
+  const existingRoles = S.roles.map(r => `${r.emoji} ${r.name} (${r.team})`).join(', ');
+
+  const systemPrompt = `Bạn là trợ lý thiết kế role cho trò chơi Ma Sói (Werewolf). 
+Nhiệm vụ: từ mô tả của người dùng, hãy tạo một role hoàn chỉnh.
+Trả về JSON thuần (không markdown, không giải thích) với đúng các trường sau:
+{
+  "name": "Tên role bằng tiếng Việt",
+  "team": "wolf" | "village" | "other",
+  "emoji": "1 emoji duy nhất phù hợp",
+  "skill": "Mô tả kỹ năng ngắn gọn 1-2 câu, rõ ràng cho quản trò đọc trong game"
+}
+
+Quy tắc phe:
+- "wolf": có lợi cho phe sói, biết danh tính sói hoặc hành động ban đêm cùng sói
+- "other": thắng điều kiện độc lập (không phải làng cũng không phải sói)
+- "village": mọi role còn lại, kể cả trung lập thiên làng
+
+Role hiện có trong game: ${existingRoles}
+Không trùng tên hay chức năng với role đã có.`;
+
+  try {
+    const resp = await apiFetch({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: input }]
+    });
+    const data = await resp.json();
+    if(!resp.ok || data.error) throw new Error(data.error?.message || `HTTP ${resp.status}`);
+    const text = geminiText(data);
+    if(!text) throw new Error('AI không trả về nội dung');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    if (!parsed.name || !parsed.team || !parsed.emoji) throw new Error('Thiếu trường bắt buộc');
+
+    _aiRolePending = parsed;
+
+    // Render preview
+    document.getElementById('aiRoleEmoji').textContent = parsed.emoji;
+    document.getElementById('aiRoleNameDisplay').textContent = parsed.name;
+    const teamMap = { wolf: ['t-wolf', '🐺 Phe Sói'], village: ['t-village', '🏘 Phe Làng'], other: ['t-other', '⚡ Phe Khác'] };
+    const [cls, label] = teamMap[parsed.team] || ['t-village', '🏘 Phe Làng'];
+    const badge = document.getElementById('aiRoleTeamBadge');
+    badge.className = `role-badge ${cls}`;
+    badge.textContent = label;
+    document.getElementById('aiRoleSkillDesc').textContent = parsed.skill || '';
+    preview.style.display = '';
+    status.textContent = '✓ AI đã gợi ý xong!';
+  } catch (e) {
+    status.textContent = '⚠️ Lỗi: ' + (e.message || 'Thử lại');
+    toast('⚠️ AI gặp lỗi: ' + (e.message||''));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Tạo role với AI';
+  }
+}
+
+function aiConfirmAddRole() {
+  if (!_aiRolePending) return;
+  const r = _aiRolePending;
+  S.roles.push({ id: 'ai_' + Date.now(), name: r.name, team: r.team, emoji: r.emoji, skill: r.skill||'' });
+  save(); renderRoles(); renderSetup();
+  document.getElementById('aiRolePreview').style.display = 'none';
+  document.getElementById('aiRoleInput').value = '';
+  document.getElementById('aiRoleStatus').textContent = '';
+  _aiRolePending = null;
+  toast(`✓ Đã thêm role "${r.name}"!`);
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+load();
+if(!S.roles||!S.roles.length)S.roles=JSON.parse(JSON.stringify(DEFAULT_ROLES));
+if(!S.votes)S.votes={};
+loadApiKeyUI();
+renderAll();
+</script>
+<!-- Game Over Modal -->
+<div class="modal-overlay hidden" id="gameOverModal">
+  <div class="modal" style="text-align:center;max-width:360px">
+    <div id="goEmoji" style="font-size:64px;margin-bottom:10px">🏆</div>
+    <h3 id="goTitle" style="font-size:22px;margin-bottom:6px">Kết thúc!</h3>
+    <p id="goDesc" style="font-size:14px;color:var(--text2);margin-bottom:16px"></p>
+    <div id="goWinners" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="newGame()">🎲 Ván mới</button>
+      <button class="btn" onclick="closeModal('gameOverModal')">📊 Xem kết quả</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Timer Modal -->
+<div class="modal-overlay hidden" id="customTimerModal">
+  <div class="modal">
+    <h3>⏱ Tự chỉnh thời gian</h3>
+    <div class="timer-custom" style="justify-content:center;margin:10px 0">
+      <input type="number" id="customMin" min="0" max="60" value="5" style="width:65px">
+      <span style="color:var(--text3);font-size:13px">phút</span>
+      <input type="number" id="customSec" min="0" max="59" value="0" style="width:65px">
+      <span style="color:var(--text3);font-size:13px">giây</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('customTimerModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="applyCustomTime();closeModal('customTimerModal')">Đặt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('✅ Service Worker đã đăng ký'))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>
